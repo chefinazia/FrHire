@@ -196,7 +196,7 @@ const StudentDashboard = () => {
 
             <div className="grid gap-6">
               {mockJobs.map((job) => {
-                const existingApplication = getApplicationByJobId(job.id)
+                const existingApplication = getApplicationByJobId(job.id, user?.id)
                 const isApplied = !!existingApplication
 
                 return (
