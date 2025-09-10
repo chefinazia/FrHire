@@ -455,11 +455,11 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
                   <p className="text-lg font-medium text-gray-900">Drop your resume here</p>
                   <p className="text-gray-500">or click to browse files</p>
                   <div className="text-sm text-gray-400 mt-2 space-y-1">
-                    <p>📄 PDF files only • Up to 10MB</p>
+                    <p>📄 PDF files only • 10KB - 10MB</p>
                     <p>✅ Standard fonts recommended</p>
                     <p>🎯 Include relevant keywords for your field</p>
                   </div>
-                </div>
+                </div >
                 <button
                   onClick={() => fileInputRef.current.click()}
                   className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -469,9 +469,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
                 <div className="text-sm text-green-600 font-medium">
                   💰 Earn 50 coins for uploading your resume!
                 </div>
-              </div>
+              </div >
             )}
-          </div>
+          </div >
         ) : (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-center space-x-3">
@@ -499,222 +499,224 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
             </div>
           </div>
         )}
-      </div>
+      </div >
 
       {/* Enhanced ATS Analysis Results */}
-      {atsAnalysis && (
-        <div className="space-y-6">
-          {/* Main Score Card */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900">🎯 ATS Compatibility Score</h3>
-              <div className={`text-4xl font-bold ${atsAnalysis.color}`}>
-                {atsAnalysis.score}%
-              </div>
-            </div>
-
-            <div className="w-full bg-gray-200 rounded-full h-4 mb-3">
-              <div
-                className={`h-4 rounded-full transition-all duration-1000 ${atsAnalysis.score >= 85 ? 'bg-green-500' :
-                  atsAnalysis.score >= 70 ? 'bg-blue-500' :
-                    atsAnalysis.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                style={{ width: `${atsAnalysis.score}%` }}
-              ></div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className={`text-lg font-semibold ${atsAnalysis.color}`}>
-                {atsAnalysis.rating}
-              </span>
-              <div className="text-right">
-                <div className="text-sm text-gray-600">
-                  {atsAnalysis.totalKeywords} keywords • {atsAnalysis.detailedMetrics.keywordDensity}% density
-                </div>
-                <div className="text-xs text-gray-500">
-                  {atsAnalysis.detailedMetrics.categoriesWithKeywords}/{atsAnalysis.detailedMetrics.totalCategories} categories covered
+      {
+        atsAnalysis && (
+          <div className="space-y-6">
+            {/* Main Score Card */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900">🎯 ATS Compatibility Score</h3>
+                <div className={`text-4xl font-bold ${atsAnalysis.color}`}>
+                  {atsAnalysis.score}%
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Critical Issues Alert */}
-          {atsAnalysis.criticalIssues.length > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h4 className="font-semibold text-red-800 mb-2">🚨 Critical Issues</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {atsAnalysis.criticalIssues.map((issue, index) => (
-                  <div key={index} className="flex items-center space-x-2 text-red-700">
-                    <span className="text-red-500">⚠</span>
-                    <span className="text-sm">{issue}</span>
-                  </div>
-                ))}
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-3">
+                <div
+                  className={`h-4 rounded-full transition-all duration-1000 ${atsAnalysis.score >= 85 ? 'bg-green-500' :
+                    atsAnalysis.score >= 70 ? 'bg-blue-500' :
+                      atsAnalysis.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                    }`}
+                  style={{ width: `${atsAnalysis.score}%` }}
+                ></div>
               </div>
-            </div>
-          )}
 
-          {/* Compact Analysis Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            {/* Resume Structure */}
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <span className="mr-2">📋</span>
-                Structure Analysis
-              </h4>
-              <div className="space-y-2">
-                {[
-                  { key: 'hasContactInfo', label: 'Contact Info', icon: '📧' },
-                  { key: 'hasExperience', label: 'Experience', icon: '💼' },
-                  { key: 'hasEducation', label: 'Education', icon: '🎓' },
-                  { key: 'hasSkills', label: 'Skills', icon: '⚡' },
-                  { key: 'hasProjects', label: 'Projects', icon: '🚀' },
-                  { key: 'hasCertifications', label: 'Certifications', icon: '🏆' },
-                  { key: 'hasMetrics', label: 'Metrics', icon: '📊' }
-                ].map(({ key, label, icon }) => (
-                  <div key={key} className={`flex items-center justify-between py-1 px-2 rounded text-sm ${atsAnalysis.analysis[key] ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                    }`}>
-                    <span className="flex items-center">
-                      <span className="mr-2">{icon}</span>
-                      {label}
-                    </span>
-                    <span className="font-medium">
-                      {atsAnalysis.analysis[key] ? '✓' : '✗'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Top Performing Categories */}
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <span className="mr-2">🏅</span>
-                Top Categories
-              </h4>
-              {atsAnalysis.topCategories.length > 0 ? (
-                <div className="space-y-2">
-                  {atsAnalysis.topCategories.map(({ category, score }, index) => (
-                    <div key={category} className="flex items-center justify-between py-2 px-3 bg-green-50 rounded">
-                      <span className="text-sm font-medium text-green-800 capitalize">
-                        #{index + 1} {category.replace(/([A-Z])/g, ' $1')}
-                      </span>
-                      <span className="text-sm font-bold text-green-600">{score}%</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 italic">No strong categories found</p>
-              )}
-            </div>
-
-            {/* Weak Areas */}
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <span className="mr-2">⚠️</span>
-                Needs Improvement
-              </h4>
-              {atsAnalysis.weakCategories.length > 0 ? (
-                <div className="space-y-2">
-                  {atsAnalysis.weakCategories.slice(0, 4).map((category) => (
-                    <div key={category} className="py-2 px-3 bg-red-50 rounded">
-                      <span className="text-sm font-medium text-red-800 capitalize">
-                        {category.replace(/([A-Z])/g, ' $1')}
-                      </span>
-                      <div className="text-xs text-red-600 mt-1">
-                        No keywords found
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-green-600 italic">All major categories covered!</p>
-              )}
-            </div>
-          </div>
-
-          {/* Category Scores Grid */}
-          <div className="bg-white rounded-lg border p-4">
-            <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="mr-2">📈</span>
-              Category Performance
-            </h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {Object.entries(atsAnalysis.categoryScores).map(([category, score]) => (
-                <div key={category} className="text-center">
-                  <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-white font-bold text-sm ${score >= 70 ? 'bg-green-500' :
-                    score >= 40 ? 'bg-yellow-500' :
-                      score > 0 ? 'bg-orange-500' : 'bg-red-500'
-                    }`}>
-                    {score}%
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1 capitalize">
-                    {category.replace(/([A-Z])/g, ' $1')}
+              <div className="flex justify-between items-center">
+                <span className={`text-lg font-semibold ${atsAnalysis.color}`}>
+                  {atsAnalysis.rating}
+                </span>
+                <div className="text-right">
+                  <div className="text-sm text-gray-600">
+                    {atsAnalysis.totalKeywords} keywords • {atsAnalysis.detailedMetrics.keywordDensity}% density
                   </div>
                   <div className="text-xs text-gray-500">
-                    {atsAnalysis.foundKeywords[category]?.length || 0} words
+                    {atsAnalysis.detailedMetrics.categoriesWithKeywords}/{atsAnalysis.detailedMetrics.totalCategories} categories covered
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommendations */}
-          <div className="bg-white rounded-lg border p-4">
-            <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-              <span className="mr-2">💡</span>
-              Actionable Recommendations
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {atsAnalysis.recommendations.map((rec, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                  <span className="text-blue-500 mt-1">💬</span>
-                  <span className="text-sm text-blue-800 font-medium">{rec}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Found Keywords - Compact View */}
-          {Object.values(atsAnalysis.foundKeywords).some(arr => arr.length > 0) && (
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <span className="mr-2">🎯</span>
-                Detected Keywords
-              </h4>
-              <div className="max-h-64 overflow-y-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(atsAnalysis.foundKeywords).map(([category, keywords]) => (
-                    keywords.length > 0 && (
-                      <div key={category} className="bg-gray-50 rounded-lg p-3">
-                        <h5 className="text-sm font-semibold text-gray-700 mb-2 capitalize">
-                          {category.replace(/([A-Z])/g, ' $1')} ({keywords.length})
-                        </h5>
-                        <div className="flex flex-wrap gap-1">
-                          {keywords.slice(0, 6).map((keyword, index) => (
-                            <span
-                              key={index}
-                              className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium"
-                            >
-                              {keyword}
-                            </span>
-                          ))}
-                          {keywords.length > 6 && (
-                            <span className="text-xs text-gray-500 px-2 py-1">
-                              +{keywords.length - 6} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  ))}
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+
+            {/* Critical Issues Alert */}
+            {atsAnalysis.criticalIssues.length > 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h4 className="font-semibold text-red-800 mb-2">🚨 Critical Issues</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {atsAnalysis.criticalIssues.map((issue, index) => (
+                    <div key={index} className="flex items-center space-x-2 text-red-700">
+                      <span className="text-red-500">⚠</span>
+                      <span className="text-sm">{issue}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Compact Analysis Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              {/* Resume Structure */}
+              <div className="bg-white rounded-lg border p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <span className="mr-2">📋</span>
+                  Structure Analysis
+                </h4>
+                <div className="space-y-2">
+                  {[
+                    { key: 'hasContactInfo', label: 'Contact Info', icon: '📧' },
+                    { key: 'hasExperience', label: 'Experience', icon: '💼' },
+                    { key: 'hasEducation', label: 'Education', icon: '🎓' },
+                    { key: 'hasSkills', label: 'Skills', icon: '⚡' },
+                    { key: 'hasProjects', label: 'Projects', icon: '🚀' },
+                    { key: 'hasCertifications', label: 'Certifications', icon: '🏆' },
+                    { key: 'hasMetrics', label: 'Metrics', icon: '📊' }
+                  ].map(({ key, label, icon }) => (
+                    <div key={key} className={`flex items-center justify-between py-1 px-2 rounded text-sm ${atsAnalysis.analysis[key] ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                      }`}>
+                      <span className="flex items-center">
+                        <span className="mr-2">{icon}</span>
+                        {label}
+                      </span>
+                      <span className="font-medium">
+                        {atsAnalysis.analysis[key] ? '✓' : '✗'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top Performing Categories */}
+              <div className="bg-white rounded-lg border p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <span className="mr-2">🏅</span>
+                  Top Categories
+                </h4>
+                {atsAnalysis.topCategories.length > 0 ? (
+                  <div className="space-y-2">
+                    {atsAnalysis.topCategories.map(({ category, score }, index) => (
+                      <div key={category} className="flex items-center justify-between py-2 px-3 bg-green-50 rounded">
+                        <span className="text-sm font-medium text-green-800 capitalize">
+                          #{index + 1} {category.replace(/([A-Z])/g, ' $1')}
+                        </span>
+                        <span className="text-sm font-bold text-green-600">{score}%</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No strong categories found</p>
+                )}
+              </div>
+
+              {/* Weak Areas */}
+              <div className="bg-white rounded-lg border p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <span className="mr-2">⚠️</span>
+                  Needs Improvement
+                </h4>
+                {atsAnalysis.weakCategories.length > 0 ? (
+                  <div className="space-y-2">
+                    {atsAnalysis.weakCategories.slice(0, 4).map((category) => (
+                      <div key={category} className="py-2 px-3 bg-red-50 rounded">
+                        <span className="text-sm font-medium text-red-800 capitalize">
+                          {category.replace(/([A-Z])/g, ' $1')}
+                        </span>
+                        <div className="text-xs text-red-600 mt-1">
+                          No keywords found
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-green-600 italic">All major categories covered!</p>
+                )}
+              </div>
+            </div>
+
+            {/* Category Scores Grid */}
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="mr-2">📈</span>
+                Category Performance
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {Object.entries(atsAnalysis.categoryScores).map(([category, score]) => (
+                  <div key={category} className="text-center">
+                    <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-white font-bold text-sm ${score >= 70 ? 'bg-green-500' :
+                      score >= 40 ? 'bg-yellow-500' :
+                        score > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      }`}>
+                      {score}%
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1 capitalize">
+                      {category.replace(/([A-Z])/g, ' $1')}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {atsAnalysis.foundKeywords[category]?.length || 0} words
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <span className="mr-2">💡</span>
+                Actionable Recommendations
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {atsAnalysis.recommendations.map((rec, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-500 mt-1">💬</span>
+                    <span className="text-sm text-blue-800 font-medium">{rec}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Found Keywords - Compact View */}
+            {Object.values(atsAnalysis.foundKeywords).some(arr => arr.length > 0) && (
+              <div className="bg-white rounded-lg border p-4">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                  <span className="mr-2">🎯</span>
+                  Detected Keywords
+                </h4>
+                <div className="max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(atsAnalysis.foundKeywords).map(([category, keywords]) => (
+                      keywords.length > 0 && (
+                        <div key={category} className="bg-gray-50 rounded-lg p-3">
+                          <h5 className="text-sm font-semibold text-gray-700 mb-2 capitalize">
+                            {category.replace(/([A-Z])/g, ' $1')} ({keywords.length})
+                          </h5>
+                          <div className="flex flex-wrap gap-1">
+                            {keywords.slice(0, 6).map((keyword, index) => (
+                              <span
+                                key={index}
+                                className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium"
+                              >
+                                {keyword}
+                              </span>
+                            ))}
+                            {keywords.length > 6 && (
+                              <span className="text-xs text-gray-500 px-2 py-1">
+                                +{keywords.length - 6} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+    </div >
   )
 }
 
