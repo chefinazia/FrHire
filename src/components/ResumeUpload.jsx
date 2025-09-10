@@ -13,37 +13,138 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const [uploadedResume, setUploadedResume] = useState(null)
   const [atsAnalysis, setAtsAnalysis] = useState(null)
 
-  // ATS Keywords that employers commonly search for
+  // Comprehensive ATS Keywords for ALL technology stacks and fields
   const atsKeywords = {
-    technical: [
-      'javascript', 'react', 'node.js', 'python', 'java', 'sql', 'html', 'css',
-      'mongodb', 'postgresql', 'git', 'aws', 'docker', 'kubernetes', 'typescript',
-      'vue.js', 'angular', 'express', 'django', 'flask', 'spring', 'hibernate'
+    // Frontend Technologies
+    frontend: [
+      'react', 'vue.js', 'angular', 'svelte', 'next.js', 'nuxt.js', 'gatsby',
+      'javascript', 'typescript', 'html', 'css', 'sass', 'scss', 'less',
+      'tailwind', 'bootstrap', 'material-ui', 'chakra-ui', 'styled-components',
+      'webpack', 'vite', 'parcel', 'rollup', 'babel', 'eslint', 'prettier'
     ],
+    // Backend Technologies
+    backend: [
+      'node.js', 'express', 'nest.js', 'python', 'django', 'flask', 'fastapi',
+      'java', 'spring', 'spring boot', 'hibernate', 'c#', '.net', 'asp.net',
+      'php', 'laravel', 'symfony', 'ruby', 'rails', 'go', 'gin', 'rust',
+      'kotlin', 'scala', 'clojure', 'elixir', 'phoenix'
+    ],
+    // Mobile Development
+    mobile: [
+      'react native', 'flutter', 'dart', 'swift', 'ios', 'android', 'kotlin',
+      'objective-c', 'xamarin', 'ionic', 'cordova', 'phonegap', 'unity',
+      'flutter web', 'expo', 'react navigation'
+    ],
+    // Databases & Storage
+    database: [
+      'mysql', 'postgresql', 'mongodb', 'redis', 'elasticsearch', 'sqlite',
+      'oracle', 'sql server', 'dynamodb', 'cassandra', 'neo4j', 'firebase',
+      'supabase', 'prisma', 'sequelize', 'mongoose', 'typeorm'
+    ],
+    // Cloud & DevOps
+    cloud: [
+      'aws', 'azure', 'gcp', 'google cloud', 'docker', 'kubernetes', 'terraform',
+      'ansible', 'jenkins', 'gitlab ci', 'github actions', 'circleci', 'travis ci',
+      'helm', 'istio', 'prometheus', 'grafana', 'elk stack', 'datadog'
+    ],
+    // Data Science & AI
+    datascience: [
+      'pandas', 'numpy', 'scikit-learn', 'tensorflow', 'pytorch', 'keras',
+      'jupyter', 'r', 'matlab', 'spark', 'hadoop', 'kafka', 'airflow',
+      'mlflow', 'kubeflow', 'tableau', 'power bi', 'looker', 'snowflake'
+    ],
+    // Security & Testing
+    security: [
+      'cybersecurity', 'penetration testing', 'owasp', 'ssl', 'encryption',
+      'oauth', 'jwt', 'ldap', 'active directory', 'burp suite', 'metasploit',
+      'wireshark', 'nessus', 'vulnerability assessment', 'compliance'
+    ],
+    // Testing Frameworks
+    testing: [
+      'jest', 'cypress', 'selenium', 'junit', 'testng', 'mocha', 'chai',
+      'puppeteer', 'playwright', 'enzyme', 'testing library', 'karma',
+      'jasmine', 'rspec', 'pytest', 'unittest'
+    ],
+    // Methodologies & Practices
+    methodologies: [
+      'agile', 'scrum', 'kanban', 'devops', 'ci/cd', 'tdd', 'bdd', 'microservices',
+      'clean code', 'solid principles', 'design patterns', 'mvp', 'mvc',
+      'rest api', 'graphql', 'grpc', 'soap', 'serverless'
+    ],
+    // Business & Soft Skills
     soft: [
       'leadership', 'communication', 'teamwork', 'problem solving', 'analytical',
-      'project management', 'collaboration', 'adaptability', 'creativity', 'initiative'
+      'project management', 'collaboration', 'adaptability', 'creativity', 'initiative',
+      'mentoring', 'cross-functional', 'stakeholder management', 'client facing',
+      'time management', 'critical thinking', 'innovation', 'strategic planning'
     ],
+    // Action Verbs for Experience
     experience: [
-      'experience', 'developed', 'implemented', 'managed', 'led', 'created',
-      'designed', 'optimized', 'improved', 'achieved', 'delivered', 'coordinated'
+      'developed', 'implemented', 'designed', 'architected', 'built', 'created',
+      'managed', 'led', 'coordinated', 'optimized', 'improved', 'delivered',
+      'achieved', 'increased', 'reduced', 'streamlined', 'automated', 'scaled',
+      'migrated', 'integrated', 'deployed', 'maintained', 'collaborated',
+      'mentored', 'trained', 'supervised', 'analyzed', 'researched'
     ],
+    // Education & Certifications
     education: [
-      'bachelor', 'master', 'degree', 'university', 'college', 'certification',
-      'diploma', 'course', 'training', 'bootcamp'
+      'bachelor', 'master', 'phd', 'degree', 'university', 'college', 'institute',
+      'certification', 'diploma', 'course', 'training', 'bootcamp', 'workshop',
+      'aws certified', 'google certified', 'microsoft certified', 'cisco certified',
+      'oracle certified', 'comptia', 'cissp', 'cisa', 'pmp', 'scrum master'
+    ],
+    // Industry-Specific Terms
+    fintech: [
+      'fintech', 'blockchain', 'cryptocurrency', 'defi', 'payment processing',
+      'financial modeling', 'risk management', 'compliance', 'banking',
+      'trading algorithms', 'fraud detection', 'kyc', 'aml'
+    ],
+    healthcare: [
+      'healthcare', 'hipaa', 'ehr', 'emr', 'fhir', 'medical devices',
+      'telemedicine', 'clinical trials', 'pharmaceuticals', 'biotech',
+      'medical imaging', 'health informatics', 'patient data'
+    ],
+    ecommerce: [
+      'e-commerce', 'shopify', 'magento', 'woocommerce', 'payment gateways',
+      'inventory management', 'order management', 'customer analytics',
+      'conversion optimization', 'seo', 'digital marketing', 'crm'
     ]
   }
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0]
     if (file) {
-      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      // Strict file validation
+      const validationResult = validateFile(file)
+      if (validationResult.isValid) {
         handleResumeUpload(file)
       } else {
-        alert('Please upload a PDF file only')
+        alert(validationResult.error)
         event.target.value = ''
       }
     }
+  }
+
+  const validateFile = (file) => {
+    // Check file type
+    if (!file.type === 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      return { isValid: false, error: 'Only PDF files are allowed. Please convert your resume to PDF format.' }
+    }
+
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024 // 10MB in bytes
+    if (file.size > maxSize) {
+      return { isValid: false, error: 'File size too large. Please compress your PDF to under 10MB.' }
+    }
+
+    // Check filename for suspicious characters
+    const fileName = file.name
+    const validFileNameRegex = /^[a-zA-Z0-9._\-\s()]+\.pdf$/i
+    if (!validFileNameRegex.test(fileName)) {
+      return { isValid: false, error: 'Invalid filename. Please use only letters, numbers, spaces, dots, dashes, and parentheses.' }
+    }
+
+    return { isValid: true }
   }
 
   const handleResumeUpload = async (file) => {
@@ -133,81 +234,158 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   }
 
   const performATSAnalysis = (resumeText) => {
-    const foundKeywords = {
-      technical: [],
-      soft: [],
-      experience: [],
-      education: []
+    const foundKeywords = {}
+    const categoryScores = {}
+    const categoryWeights = {
+      frontend: 1.2,      // High weight for technical skills
+      backend: 1.2,
+      mobile: 1.2,
+      database: 1.1,
+      cloud: 1.1,
+      datascience: 1.1,
+      security: 1.0,
+      testing: 1.0,
+      methodologies: 0.9,
+      soft: 0.8,          // Lower weight for soft skills
+      experience: 1.0,
+      education: 0.9,
+      fintech: 1.1,       // Industry-specific boost
+      healthcare: 1.1,
+      ecommerce: 1.1
     }
 
-    let totalKeywords = 0
-    let foundCount = 0
+    let totalScore = 0
+    let maxPossibleScore = 0
+    let overallFoundCount = 0
 
-    // Check for keywords in each category
+    // Analyze each category with weighted scoring
     Object.keys(atsKeywords).forEach(category => {
+      foundKeywords[category] = []
+      let categoryFound = 0
+
       atsKeywords[category].forEach(keyword => {
-        totalKeywords++
+        const weight = categoryWeights[category] || 1
+        maxPossibleScore += weight
+
         if (resumeText.includes(keyword.toLowerCase())) {
           foundKeywords[category].push(keyword)
-          foundCount++
+          categoryFound++
+          totalScore += weight
+          overallFoundCount++
         }
       })
+
+      // Calculate category score percentage
+      const categoryTotal = atsKeywords[category].length * (categoryWeights[category] || 1)
+      const categoryActual = categoryFound * (categoryWeights[category] || 1)
+      categoryScores[category] = categoryTotal > 0 ? Math.round((categoryActual / categoryTotal) * 100) : 0
     })
 
-    // Calculate ATS score
-    const atsScore = Math.round((foundCount / totalKeywords) * 100)
+    // Calculate overall ATS score (more strict)
+    const atsScore = Math.round((totalScore / maxPossibleScore) * 100)
 
-    // Determine ATS rating
-    let rating, color, recommendations
-    if (atsScore >= 80) {
+    // Enhanced structure analysis
+    const structureAnalysis = {
+      hasContactInfo: resumeText.includes('email') || resumeText.includes('phone') || resumeText.includes('@'),
+      hasExperience: resumeText.includes('experience') || resumeText.includes('work') || resumeText.includes('employed'),
+      hasEducation: resumeText.includes('education') || resumeText.includes('degree') || resumeText.includes('university') || resumeText.includes('college'),
+      hasSkills: resumeText.includes('skills') || resumeText.includes('technologies') || resumeText.includes('programming'),
+      hasProjects: resumeText.includes('project') || resumeText.includes('portfolio') || resumeText.includes('github'),
+      hasCertifications: resumeText.includes('certified') || resumeText.includes('certification') || resumeText.includes('license'),
+      hasMetrics: /\d+%|\d+x|\$\d+|\d+\s*(users|customers|revenue|growth|improvement|reduction|increase)/i.test(resumeText),
+      hasActionVerbs: foundKeywords.experience.length > 3,
+      standardSections: 0
+    }
+
+    // Count standard sections
+    const sectionKeywords = ['experience', 'education', 'skills', 'summary', 'objective', 'projects', 'certifications']
+    structureAnalysis.standardSections = sectionKeywords.filter(section =>
+      resumeText.includes(section)
+    ).length
+
+    // More strict rating criteria
+    let rating, color, recommendations, criticalIssues = []
+
+    if (atsScore >= 85 && structureAnalysis.standardSections >= 4 && structureAnalysis.hasMetrics) {
       rating = 'Excellent'
       color = 'text-green-600'
       recommendations = [
-        'Your resume is highly ATS-friendly!',
-        'Great keyword optimization',
-        'Well-structured format'
+        'Outstanding ATS optimization!',
+        'Excellent keyword coverage across multiple domains',
+        'Great use of metrics and quantifiable achievements',
+        'Well-structured with standard sections'
       ]
-    } else if (atsScore >= 60) {
+    } else if (atsScore >= 70 && structureAnalysis.standardSections >= 3) {
       rating = 'Good'
       color = 'text-blue-600'
       recommendations = [
+        'Good ATS compatibility with room for improvement',
         'Add more industry-specific keywords',
-        'Include more quantifiable achievements',
-        'Consider adding technical certifications'
+        'Include more quantifiable achievements with metrics',
+        'Consider adding certifications section',
+        'Expand technical skills coverage'
       ]
-    } else if (atsScore >= 40) {
+    } else if (atsScore >= 50 && structureAnalysis.hasContactInfo) {
       rating = 'Fair'
       color = 'text-yellow-600'
       recommendations = [
-        'Increase keyword density for your field',
-        'Add more technical skills',
-        'Include measurable accomplishments',
-        'Use standard section headings'
+        'Moderate ATS compatibility - needs significant improvement',
+        'Add more relevant technical keywords for your field',
+        'Include measurable accomplishments with numbers',
+        'Use more action verbs in experience descriptions',
+        'Add missing standard sections (Skills, Projects, etc.)',
+        'Include industry-specific terminology'
       ]
     } else {
-      rating = 'Needs Improvement'
+      rating = 'Poor'
       color = 'text-red-600'
       recommendations = [
-        'Add relevant technical keywords',
-        'Include industry-specific terms',
-        'Use a more standard resume format',
-        'Add education and experience sections',
-        'Include measurable achievements'
+        'Major ATS optimization needed',
+        'Add comprehensive technical skills section',
+        'Include relevant industry keywords',
+        'Use standard resume section headings',
+        'Add quantifiable achievements with metrics',
+        'Include professional certifications',
+        'Use more action verbs to describe experiences'
       ]
     }
+
+    // Identify critical issues
+    if (!structureAnalysis.hasContactInfo) criticalIssues.push('Missing contact information')
+    if (!structureAnalysis.hasExperience) criticalIssues.push('No experience section found')
+    if (!structureAnalysis.hasSkills) criticalIssues.push('No skills section found')
+    if (!structureAnalysis.hasMetrics) criticalIssues.push('No quantifiable achievements found')
+    if (structureAnalysis.standardSections < 3) criticalIssues.push('Missing standard resume sections')
+
+    // Identify top performing categories
+    const topCategories = Object.entries(categoryScores)
+      .filter(([, score]) => score > 20)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([category, score]) => ({ category, score }))
+
+    // Identify weak categories
+    const weakCategories = Object.entries(categoryScores)
+      .filter(([category, score]) => score === 0 && atsKeywords[category].length > 5)
+      .map(([category]) => category)
 
     return {
       score: atsScore,
       rating,
       color,
       foundKeywords,
-      totalKeywords: foundCount,
+      categoryScores,
+      totalKeywords: overallFoundCount,
       recommendations,
-      analysis: {
-        hasContactInfo: resumeText.includes('email') || resumeText.includes('phone'),
-        hasExperience: resumeText.includes('experience') || resumeText.includes('work'),
-        hasEducation: resumeText.includes('education') || resumeText.includes('degree'),
-        hasSkills: resumeText.includes('skills') || resumeText.includes('programming')
+      criticalIssues,
+      topCategories,
+      weakCategories,
+      analysis: structureAnalysis,
+      detailedMetrics: {
+        totalCategories: Object.keys(atsKeywords).length,
+        categoriesWithKeywords: Object.values(foundKeywords).filter(arr => arr.length > 0).length,
+        averageCategoryScore: Object.values(categoryScores).reduce((a, b) => a + b, 0) / Object.keys(categoryScores).length,
+        keywordDensity: (overallFoundCount / resumeText.split(' ').length * 100).toFixed(2)
       }
     }
   }
@@ -229,10 +407,11 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     const files = e.dataTransfer.files
     if (files.length > 0) {
       const file = files[0]
-      if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      const validationResult = validateFile(file)
+      if (validationResult.isValid) {
         handleResumeUpload(file)
       } else {
-        alert('Please upload a PDF file only')
+        alert(validationResult.error)
       }
     }
   }
@@ -275,7 +454,11 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
                 <div>
                   <p className="text-lg font-medium text-gray-900">Drop your resume here</p>
                   <p className="text-gray-500">or click to browse files</p>
-                  <p className="text-sm text-gray-400 mt-2">PDF files only • Max 10MB</p>
+                  <div className="text-sm text-gray-400 mt-2 space-y-1">
+                    <p>📄 PDF files only • 10KB - 10MB</p>
+                    <p>✅ Standard fonts recommended</p>
+                    <p>🎯 Include relevant keywords for your field</p>
+                  </div>
                 </div>
                 <button
                   onClick={() => fileInputRef.current.click()}
@@ -318,139 +501,217 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         )}
       </div>
 
-      {/* ATS Analysis Results */}
+      {/* Enhanced ATS Analysis Results */}
       {atsAnalysis && (
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            🎯 ATS Compatibility Analysis
-          </h3>
-
-          {/* Overall Score */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">ATS Score</span>
-              <span className={`text-2xl font-bold ${atsAnalysis.color}`}>
+        <div className="space-y-6">
+          {/* Main Score Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">🎯 ATS Compatibility Score</h3>
+              <div className={`text-4xl font-bold ${atsAnalysis.color}`}>
                 {atsAnalysis.score}%
-              </span>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-3">
               <div
-                className={`h-3 rounded-full transition-all duration-1000 ${atsAnalysis.score >= 80 ? 'bg-green-500' :
-                  atsAnalysis.score >= 60 ? 'bg-blue-500' :
-                    atsAnalysis.score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                className={`h-4 rounded-full transition-all duration-1000 ${atsAnalysis.score >= 85 ? 'bg-green-500' :
+                  atsAnalysis.score >= 70 ? 'bg-blue-500' :
+                    atsAnalysis.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}
                 style={{ width: `${atsAnalysis.score}%` }}
               ></div>
             </div>
-            <div className="flex justify-between mt-2">
-              <span className={`text-sm font-medium ${atsAnalysis.color}`}>
+
+            <div className="flex justify-between items-center">
+              <span className={`text-lg font-semibold ${atsAnalysis.color}`}>
                 {atsAnalysis.rating}
               </span>
-              <span className="text-sm text-gray-500">
-                {atsAnalysis.totalKeywords} relevant keywords found
-              </span>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">
+                  {atsAnalysis.totalKeywords} keywords • {atsAnalysis.detailedMetrics.keywordDensity}% density
+                </div>
+                <div className="text-xs text-gray-500">
+                  {atsAnalysis.detailedMetrics.categoriesWithKeywords}/{atsAnalysis.detailedMetrics.totalCategories} categories covered
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Analysis Breakdown */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">✅ Resume Structure</h4>
+          {/* Critical Issues Alert */}
+          {atsAnalysis.criticalIssues.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h4 className="font-semibold text-red-800 mb-2">🚨 Critical Issues</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {atsAnalysis.criticalIssues.map((issue, index) => (
+                  <div key={index} className="flex items-center space-x-2 text-red-700">
+                    <span className="text-red-500">⚠</span>
+                    <span className="text-sm">{issue}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compact Analysis Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {/* Resume Structure */}
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <span className="mr-2">📋</span>
+                Structure Analysis
+              </h4>
               <div className="space-y-2">
-                <div className={`flex items-center space-x-2 ${atsAnalysis.analysis.hasContactInfo ? 'text-green-600' : 'text-red-600'}`}>
-                  <span>{atsAnalysis.analysis.hasContactInfo ? '✓' : '✗'}</span>
-                  <span className="text-sm">Contact Information</span>
-                </div>
-                <div className={`flex items-center space-x-2 ${atsAnalysis.analysis.hasExperience ? 'text-green-600' : 'text-red-600'}`}>
-                  <span>{atsAnalysis.analysis.hasExperience ? '✓' : '✗'}</span>
-                  <span className="text-sm">Work Experience Section</span>
-                </div>
-                <div className={`flex items-center space-x-2 ${atsAnalysis.analysis.hasEducation ? 'text-green-600' : 'text-red-600'}`}>
-                  <span>{atsAnalysis.analysis.hasEducation ? '✓' : '✗'}</span>
-                  <span className="text-sm">Education Section</span>
-                </div>
-                <div className={`flex items-center space-x-2 ${atsAnalysis.analysis.hasSkills ? 'text-green-600' : 'text-red-600'}`}>
-                  <span>{atsAnalysis.analysis.hasSkills ? '✓' : '✗'}</span>
-                  <span className="text-sm">Skills Section</span>
-                </div>
+                {[
+                  { key: 'hasContactInfo', label: 'Contact Info', icon: '📧' },
+                  { key: 'hasExperience', label: 'Experience', icon: '💼' },
+                  { key: 'hasEducation', label: 'Education', icon: '🎓' },
+                  { key: 'hasSkills', label: 'Skills', icon: '⚡' },
+                  { key: 'hasProjects', label: 'Projects', icon: '🚀' },
+                  { key: 'hasCertifications', label: 'Certifications', icon: '🏆' },
+                  { key: 'hasMetrics', label: 'Metrics', icon: '📊' }
+                ].map(({ key, label, icon }) => (
+                  <div key={key} className={`flex items-center justify-between py-1 px-2 rounded text-sm ${atsAnalysis.analysis[key] ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}>
+                    <span className="flex items-center">
+                      <span className="mr-2">{icon}</span>
+                      {label}
+                    </span>
+                    <span className="font-medium">
+                      {atsAnalysis.analysis[key] ? '✓' : '✗'}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">🔑 Keyword Categories</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Technical Skills</span>
-                  <span className="text-sm font-medium text-blue-600">
-                    {atsAnalysis.foundKeywords.technical.length}
-                  </span>
+            {/* Top Performing Categories */}
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <span className="mr-2">🏅</span>
+                Top Categories
+              </h4>
+              {atsAnalysis.topCategories.length > 0 ? (
+                <div className="space-y-2">
+                  {atsAnalysis.topCategories.map(({ category, score }, index) => (
+                    <div key={category} className="flex items-center justify-between py-2 px-3 bg-green-50 rounded">
+                      <span className="text-sm font-medium text-green-800 capitalize">
+                        #{index + 1} {category.replace(/([A-Z])/g, ' $1')}
+                      </span>
+                      <span className="text-sm font-bold text-green-600">{score}%</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Experience Terms</span>
-                  <span className="text-sm font-medium text-blue-600">
-                    {atsAnalysis.foundKeywords.experience.length}
-                  </span>
+              ) : (
+                <p className="text-sm text-gray-500 italic">No strong categories found</p>
+              )}
+            </div>
+
+            {/* Weak Areas */}
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <span className="mr-2">⚠️</span>
+                Needs Improvement
+              </h4>
+              {atsAnalysis.weakCategories.length > 0 ? (
+                <div className="space-y-2">
+                  {atsAnalysis.weakCategories.slice(0, 4).map((category) => (
+                    <div key={category} className="py-2 px-3 bg-red-50 rounded">
+                      <span className="text-sm font-medium text-red-800 capitalize">
+                        {category.replace(/([A-Z])/g, ' $1')}
+                      </span>
+                      <div className="text-xs text-red-600 mt-1">
+                        No keywords found
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Soft Skills</span>
-                  <span className="text-sm font-medium text-blue-600">
-                    {atsAnalysis.foundKeywords.soft.length}
-                  </span>
+              ) : (
+                <p className="text-sm text-green-600 italic">All major categories covered!</p>
+              )}
+            </div>
+          </div>
+
+          {/* Category Scores Grid */}
+          <div className="bg-white rounded-lg border p-4">
+            <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+              <span className="mr-2">📈</span>
+              Category Performance
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {Object.entries(atsAnalysis.categoryScores).map(([category, score]) => (
+                <div key={category} className="text-center">
+                  <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-white font-bold text-sm ${score >= 70 ? 'bg-green-500' :
+                    score >= 40 ? 'bg-yellow-500' :
+                      score > 0 ? 'bg-orange-500' : 'bg-red-500'
+                    }`}>
+                    {score}%
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1 capitalize">
+                    {category.replace(/([A-Z])/g, ' $1')}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {atsAnalysis.foundKeywords[category]?.length || 0} words
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Education Terms</span>
-                  <span className="text-sm font-medium text-blue-600">
-                    {atsAnalysis.foundKeywords.education.length}
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Recommendations */}
-          <div>
-            <h4 className="font-medium text-gray-900 mb-3">💡 Recommendations</h4>
-            <div className="bg-blue-50 rounded-lg p-4">
-              <ul className="space-y-2">
-                {atsAnalysis.recommendations.map((rec, index) => (
-                  <li key={index} className="flex items-start space-x-2">
-                    <span className="text-blue-600">•</span>
-                    <span className="text-sm text-blue-800">{rec}</span>
-                  </li>
-                ))}
-              </ul>
+          <div className="bg-white rounded-lg border p-4">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <span className="mr-2">💡</span>
+              Actionable Recommendations
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {atsAnalysis.recommendations.map((rec, index) => (
+                <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                  <span className="text-blue-500 mt-1">💬</span>
+                  <span className="text-sm text-blue-800 font-medium">{rec}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Found Keywords */}
-          {Object.keys(atsAnalysis.foundKeywords).some(category =>
-            atsAnalysis.foundKeywords[category].length > 0
-          ) && (
-              <div className="mt-6">
-                <h4 className="font-medium text-gray-900 mb-3">🎯 Keywords Found</h4>
-                <div className="space-y-3">
+          {/* Found Keywords - Compact View */}
+          {Object.values(atsAnalysis.foundKeywords).some(arr => arr.length > 0) && (
+            <div className="bg-white rounded-lg border p-4">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <span className="mr-2">🎯</span>
+                Detected Keywords
+              </h4>
+              <div className="max-h-64 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.entries(atsAnalysis.foundKeywords).map(([category, keywords]) => (
                     keywords.length > 0 && (
-                      <div key={category}>
-                        <p className="text-sm font-medium text-gray-700 capitalize mb-2">
-                          {category.replace('_', ' ')} ({keywords.length})
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {keywords.map((keyword, index) => (
+                      <div key={category} className="bg-gray-50 rounded-lg p-3">
+                        <h5 className="text-sm font-semibold text-gray-700 mb-2 capitalize">
+                          {category.replace(/([A-Z])/g, ' $1')} ({keywords.length})
+                        </h5>
+                        <div className="flex flex-wrap gap-1">
+                          {keywords.slice(0, 6).map((keyword, index) => (
                             <span
                               key={index}
-                              className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs"
+                              className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium"
                             >
                               {keyword}
                             </span>
                           ))}
+                          {keywords.length > 6 && (
+                            <span className="text-xs text-gray-500 px-2 py-1">
+                              +{keywords.length - 6} more
+                            </span>
+                          )}
                         </div>
                       </div>
                     )
                   ))}
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       )}
     </div>
