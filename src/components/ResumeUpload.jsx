@@ -219,7 +219,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   }
 
   const handleResumeUpload = async (file) => {
-    console.log('handleResumeUpload called with file:', file.name, file.type, file.size)
     setIsUploading(true)
     setIsAnalyzing(true)
 
@@ -235,9 +234,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
     try {
       // Simulate file upload
-      console.log('Starting file upload simulation...')
       await new Promise(resolve => setTimeout(resolve, 1500))
-      console.log('File upload simulation complete')
 
       // Create file URL for display
       const fileUrl = URL.createObjectURL(file)
@@ -250,12 +247,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       }
 
       setUploadedResume(resumeData)
-      console.log('Set uploaded resume data:', resumeData)
 
       // Simulate text extraction and ATS analysis
-      console.log('Starting analyzeResume...')
       const analysisResult = await analyzeResume(file)
-      console.log('analyzeResume completed, result:', analysisResult)
 
       // Award coins for uploading resume
       const coinsEarned = 50
@@ -941,8 +935,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const analyzeResume = async (file) => {
     try {
-      console.log('Starting resume analysis...', { fileName: file.name, fileType: file.type, fileSize: file.size })
-
       let extractedText = '';
 
       // Try to extract text from file
@@ -950,22 +942,17 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         try {
           const arrayBuffer = await file.arrayBuffer();
           const pdfDoc = await PDFDocument.load(arrayBuffer);
-          console.log('PDF loaded successfully, pages:', pdfDoc.getPageCount());
 
           // For PDFs, we'll use our fallback parsing since pdf-lib doesn't extract text
           extractedText = null; // This will trigger our fallback parsing
-          console.log('PDF processing complete, using fallback parsing...')
         } catch (pdfError) {
-          console.log('PDF loading failed:', pdfError);
           extractedText = null;
         }
       } else {
         // For non-PDF files, try to read as text
         try {
           extractedText = await file.text();
-          console.log('Text extracted from file:', extractedText.substring(0, 200) + '...');
         } catch (textError) {
-          console.log('Text extraction failed:', textError);
           extractedText = null;
         }
       }
@@ -976,8 +963,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         const analysisResult = await analyzeResumeFromText(extractedText)
         return analysisResult
       } else {
-        console.log('Text extraction failed, using mock data for testing...')
-        console.log('File type was:', file.type, 'File name was:', file.name)
         // Fallback to mock data for testing
         const mockExtractedText = `
 RACHIT ARORA
@@ -1061,18 +1046,13 @@ CERTIFICATIONS
 • JavaScript Coach | Topmate.io | 2023 - Present
         `
 
-        console.log('Processing mock data...')
         const parsedData = parseResumeText(mockExtractedText)
-        console.log('Parsed data from mock:', parsedData)
         const analysis = performATSAnalysis(mockExtractedText)
-        console.log('ATS analysis result:', analysis)
         const atsScoreResult = calculateATSScore(parsedData)
-        console.log('ATS score result:', atsScoreResult)
-
+        
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
-        console.log('Set extracted resume data in analyzeResume:', parsedData)
 
         // Save to database
         if (user?.id && parsedData) {
