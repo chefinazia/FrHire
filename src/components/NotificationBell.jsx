@@ -8,7 +8,7 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showAll, setShowAll] = useState(false)
 
-  const userNotifications = getNotificationsByUserId(user?.id || 1)
+  const userNotifications = user?.id != null ? getNotificationsByUserId(user.id) : []
   const unreadCount = userNotifications.filter(n => !n.read).length
   const sortedNotifications = userNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
   const displayNotifications = showAll ? sortedNotifications : sortedNotifications.slice(0, 5)
