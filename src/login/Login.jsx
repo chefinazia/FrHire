@@ -34,7 +34,8 @@ const Login = () => {
             id: 1,
             email: 'john@student.com',
             name: 'John Smith',
-            userType: 'student'
+            userType: 'student',
+            coins: 100
           }
         },
         {
@@ -44,7 +45,8 @@ const Login = () => {
             id: 2,
             email: 'jane@student.com',
             name: 'Jane Doe',
-            userType: 'student'
+            userType: 'student',
+            coins: 100
           }
         },
         {
@@ -54,7 +56,8 @@ const Login = () => {
             id: 3,
             email: 'mike@student.com',
             name: 'Mike Johnson',
-            userType: 'student'
+            userType: 'student',
+            coins: 100
           }
         },
         // Recruiter account
