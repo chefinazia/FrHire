@@ -196,7 +196,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     return { isValid: true }
   }
 
-  // Reset all state to initial values
+  // Reset all state to initial values (for delete/upload new resume)
   const resetAllState = () => {
     setUploadedResume(null)
     setAtsAnalysis(null)
@@ -218,8 +218,15 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     setIsUploading(true)
     setIsAnalyzing(true)
 
-    // Clear previous data when uploading new resume
-    resetAllState()
+    // Clear previous analysis data when uploading new resume (but keep upload state)
+    setAtsAnalysis(null)
+    setAtsScore(null)
+    setExtractedResumeData(null)
+    setImprovedResumeData(null)
+    setShowSmartForm(false)
+    setForceShowForm(false)
+    setShowTextInput(false)
+    setResumeText('')
 
     try {
       // Simulate file upload
