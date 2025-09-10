@@ -1064,7 +1064,7 @@ CERTIFICATIONS
         console.log('ATS analysis result:', analysis)
         const atsScoreResult = calculateATSScore(parsedData)
         console.log('ATS score result:', atsScoreResult)
-        
+
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
@@ -1786,13 +1786,6 @@ CERTIFICATIONS
       {
         showSmartForm && (extractedResumeData || improvedResumeData) && (
           <div className="mt-6">
-            {console.log('SmartResumeForm data:', {
-              atsAnalysis: !!atsAnalysis,
-              atsScore: !!atsScore,
-              extractedResumeData: extractedResumeData,
-              improvedResumeData: improvedResumeData,
-              finalData: improvedResumeData || extractedResumeData
-            })}
             <SmartResumeForm
               atsAnalysis={atsAnalysis}
               atsScore={atsScore}
@@ -1840,20 +1833,11 @@ CERTIFICATIONS
             </p>
             <button
               onClick={() => {
-                console.log('Edit Improvements clicked - Current data:', {
-                  extractedResumeData,
-                  improvedResumeData,
-                  atsAnalysis: !!atsAnalysis,
-                  atsScore: !!atsScore
-                })
                 setShowSmartForm(true)
                 setForceShowForm(true)
                 // Use the already parsed data from current analysis
                 if (extractedResumeData) {
                   setImprovedResumeData(extractedResumeData)
-                  console.log('Set improvedResumeData to:', extractedResumeData)
-                } else {
-                  console.log('No extractedResumeData available!')
                 }
               }}
               className="mt-2 text-green-600 hover:text-green-800 text-sm font-medium"
