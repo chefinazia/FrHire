@@ -113,13 +113,23 @@ const ResumeBuilder = ({ onExported }) => {
 
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
-      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height)
-      const imgWidth = canvas.width * ratio
-      const imgHeight = canvas.height * ratio
-      const x = (pageWidth - imgWidth) / 2
-      const y = 20
 
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight)
+      // Fit to page width and slice across multiple pages if needed
+      const imgWidth = pageWidth
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      let heightLeft = imgHeight
+      let position = 0
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+      }
+
       pdf.save(`${(form.fullName || 'resume').replace(/\s+/g, '_')}.pdf`)
       if (onExported) onExported()
     } catch (err) {
@@ -246,103 +256,107 @@ const ResumeBuilder = ({ onExported }) => {
             </div>
           </div>
 
-          {/* Right: Live Preview */}
+          {/* Right: Professional Live Preview (print-optimized) */}
           <div>
-            <div ref={previewRef} className="bg-white rounded-lg border p-6 shadow-sm">
-              {/* Header */}
-              <div className="border-b pb-2 mb-3">
-                <h2 className="text-2xl font-bold text-gray-900">{form.fullName || 'Your Name'}</h2>
-                <div className="text-xs text-gray-600 space-x-2">
-                  {form.email && <span>📧 {form.email}</span>}
-                  {form.phone && <span>📞 {form.phone}</span>}
-                  {form.location && <span>📍 {form.location}</span>}
-                  {form.linkedin && <span>🔗 {form.linkedin}</span>}
-                  {form.github && <span>🐙 {form.github}</span>}
-                  {form.portfolio && <span>🌐 {form.portfolio}</span>}
+            <div ref={previewRef} className="bg-white border shadow-sm">
+              {/* Header Band */}
+              <div className="px-8 pt-8 pb-4 border-b">
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">{form.fullName || 'Your Name'}</h1>
+                <div className="mt-1 text-xs text-gray-700 flex flex-wrap gap-x-3 gap-y-1">
+                  {form.email && <span>{form.email}</span>}
+                  {form.phone && <span>{form.phone}</span>}
+                  {form.location && <span>{form.location}</span>}
+                  {form.linkedin && <span>{form.linkedin}</span>}
+                  {form.github && <span>{form.github}</span>}
+                  {form.portfolio && <span>{form.portfolio}</span>}
                 </div>
               </div>
 
-              {/* Summary */}
-              {form.summary && (
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">Summary</h3>
-                  <p className="text-sm text-gray-700 leading-relaxed">{form.summary}</p>
-                </div>
-              )}
+              <div className="px-8 py-6">
+                {/* Summary */}
+                {form.summary && (
+                  <section className="mb-5">
+                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Summary</h2>
+                    <p className="mt-1 text-sm leading-relaxed text-gray-800">
+                      {form.summary}
+                    </p>
+                  </section>
+                )}
 
-              {/* Skills */}
-              {form.skills && (
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">Skills</h3>
-                  <div className="flex flex-wrap gap-1">
-                    {form.skills.split(',').map((s, i) => (
-                      <span key={i} className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">{s.trim()}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                {/* Skills */}
+                {form.skills && (
+                  <section className="mb-5">
+                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Skills</h2>
+                    <div className="mt-1 text-sm text-gray-800 flex flex-wrap gap-2">
+                      {form.skills.split(',').map((s, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-gray-100">{s.trim()}</span>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-              {/* Experience */}
-              {form.experience.some(e => e.company || e.role || e.bullets) && (
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">Experience</h3>
-                  <div className="space-y-2">
-                    {form.experience.map((e, i) => (
-                      (e.company || e.role || e.bullets) && (
-                        <div key={i}>
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="font-medium text-gray-900">{e.role || 'Title'}</div>
-                            <div className="text-gray-500">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
+                {/* Experience */}
+                {form.experience.some(e => e.company || e.role || e.bullets) && (
+                  <section className="mb-5">
+                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Experience</h2>
+                    <div className="mt-2 space-y-3">
+                      {form.experience.map((e, i) => (
+                        (e.company || e.role || e.bullets) && (
+                          <div key={i}>
+                            <div className="flex items-baseline justify-between">
+                              <div className="text-sm font-semibold text-gray-900">{e.role || 'Title'}</div>
+                              <div className="text-xs text-gray-600">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
+                            </div>
+                            <div className="text-xs text-gray-700">{e.company}</div>
+                            {e.bullets && (
+                              <ul className="mt-1 list-disc list-inside text-sm text-gray-800 space-y-1">
+                                {e.bullets.split('\n').map((b, bi) => b.trim() && <li key={bi}>{b.trim()}</li>)}
+                              </ul>
+                            )}
                           </div>
-                          <div className="text-xs text-gray-600 mb-1">{e.company}</div>
-                          {e.bullets && (
-                            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                              {e.bullets.split('\n').map((b, bi) => b.trim() && <li key={bi}>{b.trim()}</li>)}
-                            </ul>
-                          )}
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
+                        )
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-              {/* Projects */}
-              {form.projects.some(p => p.name || p.description) && (
-                <div className="mb-3">
-                  <h3 className="text-sm font-semibold text-gray-800">Projects</h3>
-                  <div className="space-y-2">
-                    {form.projects.map((p, i) => (
-                      (p.name || p.description) && (
-                        <div key={i} className="text-sm">
-                          <div className="font-medium text-gray-900">
-                            {p.name} {p.link && <span className="text-blue-600 text-xs">({p.link})</span>}
+                {/* Projects */}
+                {form.projects.some(p => p.name || p.description) && (
+                  <section className="mb-5">
+                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Projects</h2>
+                    <div className="mt-2 space-y-2">
+                      {form.projects.map((p, i) => (
+                        (p.name || p.description) && (
+                          <div key={i} className="text-sm text-gray-800">
+                            <div className="font-semibold">
+                              {p.name} {p.link && <span className="text-blue-700 text-xs">({p.link})</span>}
+                            </div>
+                            <div>{p.description}</div>
                           </div>
-                          <div className="text-gray-700">{p.description}</div>
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
+                        )
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-              {/* Education */}
-              {form.education.some(e => e.school || e.degree) && (
-                <div className="mb-1">
-                  <h3 className="text-sm font-semibold text-gray-800">Education</h3>
-                  <div className="space-y-1">
-                    {form.education.map((e, i) => (
-                      (e.school || e.degree) && (
-                        <div key={i} className="text-sm">
-                          <div className="font-medium text-gray-900">{e.degree}</div>
-                          <div className="text-gray-700">{e.school}</div>
-                          <div className="text-xs text-gray-500">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
-                        </div>
-                      )
-                    ))}
-                  </div>
-                </div>
-              )}
+                {/* Education */}
+                {form.education.some(e => e.school || e.degree) && (
+                  <section>
+                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Education</h2>
+                    <div className="mt-2 space-y-1">
+                      {form.education.map((e, i) => (
+                        (e.school || e.degree) && (
+                          <div key={i} className="text-sm text-gray-800">
+                            <div className="font-semibold">{e.degree}</div>
+                            <div>{e.school}</div>
+                            <div className="text-xs text-gray-600">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
             </div>
 
             {/* Guidance */}
