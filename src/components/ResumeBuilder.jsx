@@ -113,7 +113,6 @@ const ResumeBuilder = ({ onExported }) => {
 
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
-
       // Fit to page width and slice across multiple pages if needed
       const imgWidth = pageWidth
       const imgHeight = (canvas.height * imgWidth) / canvas.width
@@ -129,7 +128,13 @@ const ResumeBuilder = ({ onExported }) => {
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
         heightLeft -= pageHeight
       }
+      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height)
+      const imgWidth = canvas.width * ratio
+      const imgHeight = canvas.height * ratio
+      const x = (pageWidth - imgWidth) / 2
+      const y = 20
 
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight)
       pdf.save(`${(form.fullName || 'resume').replace(/\s+/g, '_')}.pdf`)
       if (onExported) onExported()
     } catch (err) {
@@ -153,7 +158,6 @@ const ResumeBuilder = ({ onExported }) => {
             </button>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Inputs */}
           <div className="space-y-6">
