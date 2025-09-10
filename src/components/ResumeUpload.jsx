@@ -265,17 +265,10 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       setTimeout(async () => {
         setShowSmartForm(true)
 
-        // Reload the latest resume data from database
-        if (user?.id) {
-          try {
-            const latestResumeData = await loadResume(user.id)
-            if (latestResumeData.success && latestResumeData.data) {
-              setExtractedResumeData(latestResumeData.data)
-              console.log('Latest resume data loaded from database:', latestResumeData.data)
-            }
-          } catch (error) {
-            console.error('Error loading latest resume data:', error)
-          }
+        // The parsed data should already be set by analyzeResume function
+        // Just ensure improvedResumeData is also set for the form
+        if (extractedResumeData) {
+          setImprovedResumeData(extractedResumeData)
         }
       }, 100)
 
@@ -1784,7 +1777,7 @@ CERTIFICATIONS
               atsScore={atsScore}
               onFormSubmit={handleSmartFormSubmit}
               onFormUpdate={handleSmartFormUpdate}
-              extractedData={extractedResumeData}
+              extractedData={improvedResumeData || extractedResumeData}
               forceShow={forceShowForm}
             />
           </div>
@@ -1813,11 +1806,13 @@ CERTIFICATIONS
               The ATS score should improve significantly with these improvements.
             </p>
             <button
-              onClick={async () => {
+              onClick={() => {
                 setShowSmartForm(true)
                 setForceShowForm(true)
-                // Load existing data if available
-                await loadExistingResume()
+                // Use the already parsed data from current analysis
+                if (extractedResumeData) {
+                  setImprovedResumeData(extractedResumeData)
+                }
               }}
               className="mt-2 text-green-600 hover:text-green-800 text-sm font-medium"
             >
