@@ -455,7 +455,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
                   <p className="text-lg font-medium text-gray-900">Drop your resume here</p>
                   <p className="text-gray-500">or click to browse files</p>
                   <div className="text-sm text-gray-400 mt-2 space-y-1">
-                    <p>📄 PDF files only • 10KB - 10MB</p>
+                    <p>📄 PDF files only • Up to 10MB</p>
                     <p>✅ Standard fonts recommended</p>
                     <p>🎯 Include relevant keywords for your field</p>
                   </div>
