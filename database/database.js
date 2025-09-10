@@ -77,6 +77,12 @@ class Database {
         coins: 100
       },
       {
+        email: 'rachit@student.com',
+        name: 'Rachit Arora',
+        user_type: 'student',
+        coins: 100
+      },
+      {
         email: 'recruiter@example.com',
         name: 'Sarah Wilson',
         user_type: 'recruiter',

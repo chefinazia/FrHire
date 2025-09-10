@@ -50,11 +50,22 @@ const Login = () => {
           }
         },
         {
-          email: 'rachitarora1993@gmail.com',
+          email: 'mike@student.com',
           password: 'password',
           userData: {
             id: 3,
-            email: 'rachitarora1993@gmail.com',
+            email: 'mike@student.com',
+            name: 'Mike Johnson',
+            userType: 'student',
+            coins: 100
+          }
+        },
+        {
+          email: 'rachit@student.com',
+          password: 'password',
+          userData: {
+            id: 4,
+            email: 'rachit@student.com',
             name: 'Rachit Arora',
             userType: 'student',
             coins: 100
@@ -65,19 +76,9 @@ const Login = () => {
           email: 'recruiter@example.com',
           password: 'password',
           userData: {
-            id: 4,
+            id: 5,
             email: 'recruiter@example.com',
             name: 'Sarah Wilson',
-            userType: 'recruiter'
-          }
-        },
-        {
-          email: 'mike.recruiter@company.com',
-          password: 'password',
-          userData: {
-            id: 5,
-            email: 'mike.recruiter@company.com',
-            name: 'Mike Johnson',
             userType: 'recruiter'
           }
         }
@@ -165,7 +166,8 @@ const Login = () => {
               <strong>Demo Student Accounts:</strong><br />
               john@student.com / password (John Smith)<br />
               jane@student.com / password (Jane Doe)<br />
-              rachitarora1993@gmail.com / password (Rachit Arora)
+              mike@student.com / password (Mike Johnson)<br />
+              rachit@student.com / password (Rachit Arora)
             </p>
             <p className="text-sm text-gray-600">
               <strong>Demo Recruiter Account:</strong><br />
