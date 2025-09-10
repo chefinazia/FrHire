@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import apiClient from '../api/client.js'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -24,76 +25,14 @@ const Login = () => {
     setLoading(true)
 
     try {
-      // Predefined user accounts
-      const users = [
-        // Student accounts
-        {
-          email: 'john@student.com',
-          password: 'password',
-          userData: {
-            id: 1,
-            email: 'john@student.com',
-            name: 'John Smith',
-            userType: 'student',
-            coins: 100
-          }
-        },
-        {
-          email: 'jane@student.com',
-          password: 'password',
-          userData: {
-            id: 2,
-            email: 'jane@student.com',
-            name: 'Jane Doe',
-            userType: 'student',
-            coins: 100
-          }
-        },
-        {
-          email: 'mike@student.com',
-          password: 'password',
-          userData: {
-            id: 3,
-            email: 'mike@student.com',
-            name: 'Mike Johnson',
-            userType: 'student',
-            coins: 100
-          }
-        },
-        {
-          email: 'rachit@student.com',
-          password: 'password',
-          userData: {
-            id: 4,
-            email: 'rachit@student.com',
-            name: 'Rachit Arora',
-            userType: 'student',
-            coins: 100
-          }
-        },
-        // Recruiter accounts
-        {
-          email: 'recruiter@example.com',
-          password: 'password',
-          userData: {
-            id: 5,
-            email: 'recruiter@example.com',
-            name: 'Sarah Wilson',
-            userType: 'recruiter'
-          }
-        }
-      ]
-
-      const user = users.find(u => u.email === formData.email && u.password === formData.password)
-
-      if (user) {
-        login(user.userData, 'mock-token')
-      } else {
-        setError('Invalid email or password')
-      }
+      // Use API client for login
+      const response = await apiClient.login(formData.email, formData.password)
+      
+      // Login successful, the AuthContext will handle setting the user
+      login(response.user, 'mock-token')
     } catch (err) {
       console.error('Login error:', err)
-      setError('Login failed. Please try again.')
+      setError('Invalid email or password')
     } finally {
       setLoading(false)
     }
