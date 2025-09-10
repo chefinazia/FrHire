@@ -52,8 +52,10 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   // Load existing resume data when user changes
   useEffect(() => {
-    loadExistingResume()
-  }, [loadExistingResume])
+    if (user?.id && !extractedResumeData) {
+      loadExistingResume()
+    }
+  }, [user?.id])
 
   // Reset forceShowForm after it's been used
   useEffect(() => {
@@ -894,7 +896,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       if (parsedData) {
         const analysis = performATSAnalysis(text)
         const atsScoreResult = calculateATSScore(parsedData)
-        
+
         // Batch state updates to prevent multiple re-renders
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
@@ -1074,7 +1076,7 @@ CERTIFICATIONS
         console.log('Successfully parsed resume with PDFKit:', parsedData)
         const analysis = performATSAnalysis(extractedText)
         const atsScoreResult = calculateATSScore(parsedData)
-        
+
         // Batch state updates to prevent multiple re-renders
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
@@ -1103,7 +1105,7 @@ CERTIFICATIONS
       const extractedData = extractResumeDataForForm(extractedText)
       const analysis = performATSAnalysis(extractedText)
       const atsScoreResult = calculateATSScore(extractedData)
-      
+
       // Batch state updates to prevent multiple re-renders
       setAtsAnalysis(analysis)
       setAtsScore(atsScoreResult)
