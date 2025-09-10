@@ -14,6 +14,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const [isUploading, setIsUploading] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [uploadedResume, setUploadedResume] = useState(null)
   const [atsAnalysis, setAtsAnalysis] = useState(null)
   const [showSmartForm, setShowSmartForm] = useState(false)
@@ -50,12 +51,13 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     initDatabase()
   }, [])
 
-  // Load existing resume data when user changes
+  // Load existing resume data when user changes (only on initial load)
   useEffect(() => {
-    if (user?.id && !extractedResumeData) {
+    if (user?.id && isInitialLoad) {
       loadExistingResume()
+      setIsInitialLoad(false)
     }
-  }, [user?.id])
+  }, [user?.id, isInitialLoad])
 
   // Reset forceShowForm after it's been used
   useEffect(() => {
@@ -223,6 +225,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const handleResumeUpload = async (file) => {
     setIsUploading(true)
     setIsAnalyzing(true)
+    setIsInitialLoad(false) // Prevent loading existing data during upload
 
     // Clear previous analysis data when uploading new resume (but keep upload state)
     setAtsAnalysis(null)
