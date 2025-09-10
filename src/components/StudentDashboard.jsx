@@ -5,6 +5,7 @@ import { useApplications } from '../context/ApplicationContext'
 import { useNotifications } from '../context/NotificationContext'
 import NotificationBell from './NotificationBell'
 import ResumeUpload from './ResumeUpload'
+import ResumeBuilder from './ResumeBuilder'
 
 const StudentDashboard = () => {
   const navigate = useNavigate()
