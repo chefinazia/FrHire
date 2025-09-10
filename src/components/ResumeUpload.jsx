@@ -31,7 +31,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     try {
       const loadResult = await loadResume(user.id)
       if (loadResult.success && loadResult.data) {
-        console.log('Loaded existing resume:', loadResult.data)
+        // Batch state updates to prevent multiple re-renders
         setExtractedResumeData(loadResult.data)
         setImprovedResumeData(loadResult.data)
 
@@ -265,16 +265,8 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
       onResumeAnalyzed(resumeData, analysisResult)
 
-      // Always show smart form after analysis for user to review and improve
-      setTimeout(async () => {
-        setShowSmartForm(true)
-
-        // The parsed data should already be set by analyzeResume function
-        // Just ensure improvedResumeData is also set for the form
-        if (extractedResumeData) {
-          setImprovedResumeData(extractedResumeData)
-        }
-      }, 100)
+      // Show smart form after analysis for user to review and improve
+      setShowSmartForm(true)
 
     } catch (error) {
       console.error('Resume upload failed:', error)
@@ -900,13 +892,14 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       const parsedData = parseResumeText(text)
 
       if (parsedData) {
-        console.log('Successfully parsed resume text:', parsedData)
         const analysis = performATSAnalysis(text)
         const atsScoreResult = calculateATSScore(parsedData)
+        
+        // Batch state updates to prevent multiple re-renders
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
-        console.log('Setting extracted resume data in analyzeResumeFromText:', parsedData)
+        setImprovedResumeData(parsedData)
 
         // Save to database
         if (user?.id && parsedData) {
@@ -1049,10 +1042,12 @@ CERTIFICATIONS
         const parsedData = parseResumeText(mockExtractedText)
         const analysis = performATSAnalysis(mockExtractedText)
         const atsScoreResult = calculateATSScore(parsedData)
-        
+
+        // Batch state updates to prevent multiple re-renders
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
+        setImprovedResumeData(parsedData)
 
         // Save to database
         if (user?.id && parsedData) {
@@ -1079,9 +1074,12 @@ CERTIFICATIONS
         console.log('Successfully parsed resume with PDFKit:', parsedData)
         const analysis = performATSAnalysis(extractedText)
         const atsScoreResult = calculateATSScore(parsedData)
+        
+        // Batch state updates to prevent multiple re-renders
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
+        setImprovedResumeData(parsedData)
 
         // Save to database
         if (user?.id && parsedData) {
@@ -1103,12 +1101,14 @@ CERTIFICATIONS
 
       // Fallback to basic extraction
       const extractedData = extractResumeDataForForm(extractedText)
-      console.log('Fallback data:', extractedData)
       const analysis = performATSAnalysis(extractedText)
       const atsScoreResult = calculateATSScore(extractedData)
+      
+      // Batch state updates to prevent multiple re-renders
       setAtsAnalysis(analysis)
       setAtsScore(atsScoreResult)
       setExtractedResumeData(extractedData)
+      setImprovedResumeData(extractedData)
 
       // Save to database
       if (user?.id && extractedData) {
