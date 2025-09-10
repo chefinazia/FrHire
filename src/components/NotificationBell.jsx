@@ -115,6 +115,15 @@ const NotificationBell = () => {
                                 <path d="M3.4 2.9l17.5 8.2c.9.4.9 1.7 0 2.1L3.4 21.4c-.8.4-1.7-.4-1.4-1.3l2.6-7.1c.1-.3.4-.5.7-.6l7.9-1.4c.3 0 .3-.5 0-.6L5.3 8.9c-.3-.1-.5-.3-.6-.6L2 2.6c-.3-.8.6-1.6 1.4-1.2z" />
                               </svg>
                             </div>
+                          ) : notification.type === 'resume_uploaded' ? (
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                              {/* Document with coins */}
+                              <svg className="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+                                <path d="M14 2v6h6" />
+                                <circle cx="10" cy="12" r="2" fill="#FFD700" />
+                              </svg>
+                            </div>
                           ) : notification.status === 'Accepted' ? (
                             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                               {/* Check */}

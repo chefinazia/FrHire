@@ -23,6 +23,11 @@ export const AuthProvider = ({ children }) => {
       try {
         // In a real app, you'd verify the token with your backend
         const userData = JSON.parse(localStorage.getItem('userData'))
+        // Initialize coins for students if not present
+        if (userData.userType === 'student' && userData.coins === undefined) {
+          userData.coins = 100 // Starting coins for new students
+          localStorage.setItem('userData', JSON.stringify(userData))
+        }
         setUser(userData)
       } catch {
         localStorage.removeItem('token')
@@ -33,6 +38,10 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const login = (userData, token) => {
+    // Initialize coins for students
+    if (userData.userType === 'student' && userData.coins === undefined) {
+      userData.coins = 100
+    }
     localStorage.setItem('token', token)
     localStorage.setItem('userData', JSON.stringify(userData))
     setUser(userData)
@@ -44,11 +53,25 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  const updateUserCoins = (coinsToAdd) => {
+    if (user && user.userType === 'student') {
+      const updatedUser = {
+        ...user,
+        coins: (user.coins || 0) + coinsToAdd
+      }
+      localStorage.setItem('userData', JSON.stringify(updatedUser))
+      setUser(updatedUser)
+      return updatedUser.coins
+    }
+    return 0
+  }
+
   const value = {
     user,
     login,
     logout,
-    loading
+    loading,
+    updateUserCoins
   }
 
   return (
