@@ -258,26 +258,28 @@ const ResumeBuilder = ({ onExported }) => {
 
           {/* Right: Professional Live Preview (print-optimized) */}
           <div>
-            <div ref={previewRef} className="bg-white border shadow-sm">
-              {/* Header Band */}
-              <div className="px-8 pt-8 pb-4 border-b">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">{form.fullName || 'Your Name'}</h1>
-                <div className="mt-1 text-xs text-gray-700 flex flex-wrap gap-x-3 gap-y-1">
-                  {form.email && <span>{form.email}</span>}
-                  {form.phone && <span>{form.phone}</span>}
+            <div ref={previewRef} className="bg-white border shadow-sm" style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', lineHeight: '1.4' }}>
+              {/* Header Section */}
+              <div className="px-6 pt-6 pb-3 border-b-2 border-gray-300">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">{form.fullName || 'Your Name'}</h1>
+                <div className="text-xs text-gray-700 mb-2">
                   {form.location && <span>{form.location}</span>}
-                  {form.linkedin && <span>{form.linkedin}</span>}
-                  {form.github && <span>{form.github}</span>}
-                  {form.portfolio && <span>{form.portfolio}</span>}
+                  {form.email && <span> • {form.email}</span>}
+                  {form.phone && <span> • {form.phone}</span>}
+                </div>
+                <div className="text-xs text-gray-600">
+                  {form.linkedin && <span>LinkedIn: {form.linkedin}</span>}
+                  {form.github && <span> • GitHub: {form.github}</span>}
+                  {form.portfolio && <span> • Portfolio: {form.portfolio}</span>}
                 </div>
               </div>
 
-              <div className="px-8 py-6">
+              <div className="px-6 py-4">
                 {/* Summary */}
                 {form.summary && (
-                  <section className="mb-5">
-                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Summary</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-gray-800">
+                  <section className="mb-4">
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-1">Professional Summary</h2>
+                    <p className="text-xs text-gray-800 leading-relaxed">
                       {form.summary}
                     </p>
                   </section>
@@ -285,11 +287,13 @@ const ResumeBuilder = ({ onExported }) => {
 
                 {/* Skills */}
                 {form.skills && (
-                  <section className="mb-5">
-                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Skills</h2>
-                    <div className="mt-1 text-sm text-gray-800 flex flex-wrap gap-2">
-                      {form.skills.split(',').map((s, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded bg-gray-100">{s.trim()}</span>
+                  <section className="mb-4">
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-1">Core Skills</h2>
+                    <div className="text-xs text-gray-800">
+                      {form.skills.split(',').map((s, i, arr) => (
+                        <span key={i}>
+                          {s.trim()}{i < arr.length - 1 ? ', ' : ''}
+                        </span>
                       ))}
                     </div>
                   </section>
@@ -297,19 +301,23 @@ const ResumeBuilder = ({ onExported }) => {
 
                 {/* Experience */}
                 {form.experience.some(e => e.company || e.role || e.bullets) && (
-                  <section className="mb-5">
-                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Experience</h2>
-                    <div className="mt-2 space-y-3">
+                  <section className="mb-4">
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">Work Experience</h2>
+                    <div className="space-y-3">
                       {form.experience.map((e, i) => (
                         (e.company || e.role || e.bullets) && (
-                          <div key={i}>
-                            <div className="flex items-baseline justify-between">
-                              <div className="text-sm font-semibold text-gray-900">{e.role || 'Title'}</div>
-                              <div className="text-xs text-gray-600">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
+                          <div key={i} className="mb-3">
+                            <div className="flex justify-between items-start mb-1">
+                              <div>
+                                <div className="text-xs font-semibold text-gray-900">{e.role || 'Position'}</div>
+                                <div className="text-xs text-gray-700">{e.company}</div>
+                              </div>
+                              <div className="text-xs text-gray-600 text-right">
+                                {e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-700">{e.company}</div>
                             {e.bullets && (
-                              <ul className="mt-1 list-disc list-inside text-sm text-gray-800 space-y-1">
+                              <ul className="mt-1 list-disc list-inside text-xs text-gray-800 space-y-0.5 ml-2">
                                 {e.bullets.split('\n').map((b, bi) => b.trim() && <li key={bi}>{b.trim()}</li>)}
                               </ul>
                             )}
@@ -322,16 +330,16 @@ const ResumeBuilder = ({ onExported }) => {
 
                 {/* Projects */}
                 {form.projects.some(p => p.name || p.description) && (
-                  <section className="mb-5">
-                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Projects</h2>
-                    <div className="mt-2 space-y-2">
+                  <section className="mb-4">
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">Key Projects</h2>
+                    <div className="space-y-2">
                       {form.projects.map((p, i) => (
                         (p.name || p.description) && (
-                          <div key={i} className="text-sm text-gray-800">
+                          <div key={i} className="text-xs text-gray-800">
                             <div className="font-semibold">
-                              {p.name} {p.link && <span className="text-blue-700 text-xs">({p.link})</span>}
+                              {p.name} {p.link && <span className="text-blue-700">({p.link})</span>}
                             </div>
-                            <div>{p.description}</div>
+                            <div className="mt-0.5">{p.description}</div>
                           </div>
                         )
                       ))}
@@ -341,17 +349,31 @@ const ResumeBuilder = ({ onExported }) => {
 
                 {/* Education */}
                 {form.education.some(e => e.school || e.degree) && (
-                  <section>
-                    <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wider">Education</h2>
-                    <div className="mt-2 space-y-1">
+                  <section className="mb-4">
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">Education</h2>
+                    <div className="space-y-1">
                       {form.education.map((e, i) => (
                         (e.school || e.degree) && (
-                          <div key={i} className="text-sm text-gray-800">
+                          <div key={i} className="text-xs text-gray-800">
                             <div className="font-semibold">{e.degree}</div>
                             <div>{e.school}</div>
-                            <div className="text-xs text-gray-600">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
+                            <div className="text-gray-600">{e.start || ''}{(e.start || e.end) ? ' - ' : ''}{e.end || ''}</div>
                           </div>
                         )
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Certifications */}
+                {form.certifications && (
+                  <section>
+                    <h2 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-2">Certifications</h2>
+                    <div className="text-xs text-gray-800">
+                      {form.certifications.split(',').map((c, i, arr) => (
+                        <span key={i}>
+                          {c.trim()}{i < arr.length - 1 ? ', ' : ''}
+                        </span>
                       ))}
                     </div>
                   </section>
