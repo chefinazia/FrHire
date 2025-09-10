@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import apiClient from '../api/client.js'
 
 const AuthContext = createContext()
 
@@ -14,37 +15,45 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  // No code needed here for the "fix" instruction, as the AuthContext is already set up correctly.
 
   useEffect(() => {
     // Check for existing token on app load
-    const token = localStorage.getItem('token')
-    if (token) {
+    const loadUser = async () => {
       try {
-        // In a real app, you'd verify the token with your backend
-        const userData = JSON.parse(localStorage.getItem('userData'))
-        // Initialize coins for students if not present
-        if (userData.userType === 'student' && userData.coins === undefined) {
-          userData.coins = 100 // Starting coins for new students
-          localStorage.setItem('userData', JSON.stringify(userData))
+        const token = localStorage.getItem('token')
+        if (token) {
+          const userData = JSON.parse(localStorage.getItem('userData'))
+          if (userData && userData.id) {
+            // Fetch fresh user data from API
+            const freshUserData = await apiClient.getUser(userData.id)
+            setUser(freshUserData)
+          }
         }
-        setUser(userData)
-      } catch {
+      } catch (error) {
+        console.error('Error loading user data:', error)
         localStorage.removeItem('token')
         localStorage.removeItem('userData')
+      } finally {
+        setLoading(false)
       }
     }
-    setLoading(false)
+
+    loadUser()
   }, [])
 
-  const login = (userData, token) => {
-    // Initialize coins for students
-    if (userData.userType === 'student' && userData.coins === undefined) {
-      userData.coins = 100
+  const login = async (userData, token) => {
+    try {
+      // Use API client for login
+      const response = await apiClient.login(userData.email, 'password')
+
+      // Store token and user data in localStorage for persistence
+      localStorage.setItem('token', token)
+      localStorage.setItem('userData', JSON.stringify(response.user))
+      setUser(response.user)
+    } catch (error) {
+      console.error('Error during login:', error)
+      throw error
     }
-    localStorage.setItem('token', token)
-    localStorage.setItem('userData', JSON.stringify(userData))
-    setUser(userData)
   }
 
   const logout = () => {
@@ -53,17 +62,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
-  const updateUserCoins = (coinsToAdd) => {
-    if (user && user.userType === 'student') {
-      const updatedUser = {
-        ...user,
-        coins: (user.coins || 0) + coinsToAdd
+  const updateUserCoins = async (newCoins) => {
+    if (user) {
+      try {
+        const updatedUser = await apiClient.updateUserCoins(user.id, newCoins)
+        setUser(updatedUser)
+        localStorage.setItem('userData', JSON.stringify(updatedUser))
+      } catch (error) {
+        console.error('Error updating user coins:', error)
       }
-      localStorage.setItem('userData', JSON.stringify(updatedUser))
-      setUser(updatedUser)
-      return updatedUser.coins
     }
-    return 0
   }
 
   const value = {

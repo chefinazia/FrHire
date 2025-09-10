@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import apiClient from '../api/client.js'
 
 const NotificationContext = createContext()
 
@@ -19,20 +20,27 @@ export const NotificationProvider = ({ children }) => {
   const hasTriedRef = useRef(false)
 
   useEffect(() => {
-    // Load notifications from localStorage on mount
-    const savedNotifications = localStorage.getItem('notifications')
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications))
+    // Load notifications from API on mount
+    const loadNotifications = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'))
+        if (userData && userData.id) {
+          const dbNotifications = await apiClient.getNotificationsByUserId(userData.id)
+          setNotifications(dbNotifications)
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error)
+        setNotifications([])
+      }
     }
+
+    loadNotifications()
 
     // Sync across tabs via storage events
     const onStorage = (e) => {
-      if (e.key === 'notifications') {
-        try {
-          setNotifications(JSON.parse(e.newValue) || [])
-        } catch (error) {
-          console.warn('Failed to parse storage event data:', error)
-        }
+      if (e.key === 'userData') {
+        // Reload notifications when user changes
+        loadNotifications()
       }
     }
     window.addEventListener('storage', onStorage)
@@ -117,43 +125,59 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [])
 
-  const addNotification = (notification) => {
-    const newNotification = {
-      id: Date.now(),
-      ...notification,
-      timestamp: new Date().toISOString(),
-      read: false
-    }
-
-    const updatedNotifications = [...notifications, newNotification]
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    // Broadcast to other tabs
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
-    }
-    // Also try server push to target user if toUserId provided
-    if (wsRef.current && notification.toUserId != null) {
-      try {
-        wsRef.current.send(JSON.stringify({ type: 'notify', toUserId: notification.toUserId, notification }))
-      } catch (error) {
-        console.warn('Failed to send WebSocket notification:', error)
+  const addNotification = async (notification) => {
+    try {
+      const newNotification = {
+        user_id: notification.userId || notification.toUserId,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        application_id: notification.applicationId || null,
+        status: notification.status || null,
+        rating: notification.rating || null,
+        has_feedback: notification.hasFeedback || false,
+        is_read: false
       }
-    }
 
-    return newNotification
+      const createdNotification = await apiClient.createNotification(newNotification)
+
+      setNotifications(prev => [createdNotification, ...prev])
+
+      // Broadcast to other tabs
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notification: createdNotification })
+      }
+
+      // Also try server push to target user if toUserId provided
+      if (wsRef.current && notification.toUserId != null) {
+        try {
+          wsRef.current.send(JSON.stringify({ type: 'notify', toUserId: notification.toUserId, notification: createdNotification }))
+        } catch (error) {
+          console.warn('Failed to send WebSocket notification:', error)
+        }
+      }
+
+      return createdNotification
+    } catch (error) {
+      console.error('Error adding notification:', error)
+      throw error
+    }
   }
 
-  const markAsRead = (notificationId) => {
-    const updatedNotifications = notifications.map(notification =>
-      notification.id === notificationId
-        ? { ...notification, read: true }
-        : notification
-    )
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
+  const markAsRead = async (notificationId) => {
+    try {
+      await apiClient.markNotificationAsRead(notificationId)
+      const updatedNotifications = notifications.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, is_read: true }
+          : notification
+      )
+      setNotifications(updatedNotifications)
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notification: { id: notificationId, is_read: true } })
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
     }
   }
 
@@ -170,7 +194,7 @@ export const NotificationProvider = ({ children }) => {
   }
 
   const getUnreadCount = () => {
-    return notifications.filter(notification => !notification.read).length
+    return notifications.filter(notification => !notification.is_read).length
   }
 
   const getNotificationsByUserId = (userId) => {

@@ -6,7 +6,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
+    "api": "node api/server.js",
     "ws": "node ws-server.cjs",
+    "db": "node server.js",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -15,19 +17,25 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.2",
+    "pdf-lib": "^1.17.1",
+    "pdf2pic": "^3.2.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.2",
+    "resume-parser": "^1.1.0",
+    "sqlite3": "^5.1.7",
     "vite": "^7.1.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@tailwindcss/postcss": "^4.1.13",
-    "@vitejs/plugin-react": "^5.0.2",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.35.0",
     "eslint-plugin-react": "^7.37.5",
