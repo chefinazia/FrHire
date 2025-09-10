@@ -1770,8 +1770,15 @@ CERTIFICATIONS
 
       {/* Smart Resume Form */}
       {
-        showSmartForm && (
+        showSmartForm && (extractedResumeData || improvedResumeData) && (
           <div className="mt-6">
+            {console.log('SmartResumeForm data:', {
+              atsAnalysis: !!atsAnalysis,
+              atsScore: !!atsScore,
+              extractedResumeData: extractedResumeData,
+              improvedResumeData: improvedResumeData,
+              finalData: improvedResumeData || extractedResumeData
+            })}
             <SmartResumeForm
               atsAnalysis={atsAnalysis}
               atsScore={atsScore}
@@ -1780,6 +1787,18 @@ CERTIFICATIONS
               extractedData={improvedResumeData || extractedResumeData}
               forceShow={forceShowForm}
             />
+          </div>
+        )
+      }
+
+      {/* Form loading message */}
+      {
+        showSmartForm && !extractedResumeData && !improvedResumeData && (
+          <div className="mt-6 p-4 bg-blue-100 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <p className="text-blue-800 font-medium">Loading form data...</p>
+            </div>
           </div>
         )
       }
@@ -1807,11 +1826,20 @@ CERTIFICATIONS
             </p>
             <button
               onClick={() => {
+                console.log('Edit Improvements clicked - Current data:', {
+                  extractedResumeData,
+                  improvedResumeData,
+                  atsAnalysis: !!atsAnalysis,
+                  atsScore: !!atsScore
+                })
                 setShowSmartForm(true)
                 setForceShowForm(true)
                 // Use the already parsed data from current analysis
                 if (extractedResumeData) {
                   setImprovedResumeData(extractedResumeData)
+                  console.log('Set improvedResumeData to:', extractedResumeData)
+                } else {
+                  console.log('No extractedResumeData available!')
                 }
               }}
               className="mt-2 text-green-600 hover:text-green-800 text-sm font-medium"
