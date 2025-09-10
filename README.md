@@ -43,10 +43,6 @@ A comprehensive job application platform built with React that connects students
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/FrHire.git
-   cd FrHire
-   ```
 
 2. **Install dependencies**
    ```bash
@@ -64,7 +60,8 @@ A comprehensive job application platform built with React that connects students
    ```
 
 5. **Open your browser**
-   - Navigate to `http://localhost:5173`
+   - Navigate to `http://localhost:5173` or
+   - Navigate to `http://localhost:3000`
    - Open a second tab/window to test real-time notifications
 
 ## 🧪 Test Accounts
