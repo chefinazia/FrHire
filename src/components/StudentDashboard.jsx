@@ -5,6 +5,7 @@ import { useApplications } from '../context/ApplicationContext'
 import { useNotifications } from '../context/NotificationContext'
 import NotificationBell from './NotificationBell'
 import ResumeUpload from './ResumeUpload'
+import ResumeBuilder from './ResumeBuilder'
 
 const StudentDashboard = () => {
   const navigate = useNavigate()
@@ -353,6 +354,13 @@ const StudentDashboard = () => {
               onResumeAnalyzed={handleResumeAnalyzed}
               onCoinsUpdate={handleCoinsUpdate}
             />
+
+            {/* Resume Builder */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">🧩 Build an ATS-Friendly Resume</h3>
+              <p className="text-sm text-gray-600 mb-4">Use the builder below to craft a structured, ATS-friendly resume and export it to PDF.</p>
+              <ResumeBuilder />
+            </div>
 
             {/* Resume Statistics */}
             {resumeData && atsAnalysis && (
