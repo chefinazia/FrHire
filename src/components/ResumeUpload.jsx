@@ -45,11 +45,15 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     }
   }, [user?.id])
 
-  // Initialize database and load existing resume data on component mount
+  // Initialize database only once
   useEffect(() => {
     initDatabase()
+  }, [])
+
+  // Load existing resume data when user changes
+  useEffect(() => {
     loadExistingResume()
-  }, [user?.id, loadExistingResume])
+  }, [loadExistingResume])
 
   // Reset forceShowForm after it's been used
   useEffect(() => {
