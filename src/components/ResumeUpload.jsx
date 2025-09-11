@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../context/NotificationContext'
 import SmartResumeForm from './SmartResumeForm'
 import { initDatabase, saveResume, loadResume, updateResumeStatus } from '../utils/database'
-import { parseResumeText, calculateATSScore } from '../utils/pdfKitUtils'
-import { PDFDocument } from 'pdf-lib'
+import { parsePDFText, parseResumeText } from '../utils/pdfParser'
+import { calculateATSScore } from '../utils/pdfKitUtils'
 
 const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const { user } = useAuth()
@@ -897,6 +897,8 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const analyzeResumeFromText = useCallback(async (text) => {
     try {
+      console.log('Analyzing resume text with new parser, length:', text.length)
+      
       // Parse the text using our enhanced parser
       const parsedData = parseResumeText(text)
 
@@ -950,12 +952,11 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       // Try to extract text from file
       if (file.type === 'application/pdf') {
         try {
-          const arrayBuffer = await file.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(arrayBuffer);
-
-          // For PDFs, we'll use our fallback parsing since pdf-lib doesn't extract text
-          extractedText = null; // This will trigger our fallback parsing
+          console.log('Parsing PDF file with pdf-parse:', file.name)
+          extractedText = await parsePDFText(file)
+          console.log('PDF text extracted successfully, length:', extractedText.length)
         } catch (pdfError) {
+          console.error('PDF parsing error:', pdfError)
           extractedText = null;
         }
       } else {
