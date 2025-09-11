@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import apiClient from '../api/client.js'
 
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
     loadUser()
   }, [])
 
-  const login = async (userData, token) => {
+  const login = useCallback(async (userData, token) => {
     try {
       // Use API client for login
       const response = await apiClient.login(userData.email, 'password')
@@ -54,15 +54,15 @@ export const AuthProvider = ({ children }) => {
       console.error('Error during login:', error)
       throw error
     }
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('userData')
     setUser(null)
-  }
+  }, [])
 
-  const updateUserCoins = async (newCoins) => {
+  const updateUserCoins = useCallback(async (newCoins) => {
     if (user) {
       try {
         const updatedUser = await apiClient.updateUserCoins(user.id, newCoins)
@@ -72,15 +72,15 @@ export const AuthProvider = ({ children }) => {
         console.error('Error updating user coins:', error)
       }
     }
-  }
+  }, [user])
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     login,
     logout,
     loading,
     updateUserCoins
-  }
+  }), [user, login, logout, loading, updateUserCoins])
 
   return (
     <AuthContext.Provider value={value}>

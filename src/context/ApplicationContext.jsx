@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import apiClient from '../api/client.js'
 
@@ -33,7 +33,7 @@ export const ApplicationProvider = ({ children }) => {
     loadApplications()
   }, [])
 
-  const applyToJob = async (job, currentUser) => {
+  const applyToJob = useCallback(async (job, currentUser) => {
     try {
       const newApplication = {
         job_id: job.id,
@@ -57,9 +57,9 @@ export const ApplicationProvider = ({ children }) => {
       console.error('Error applying to job:', error)
       throw error
     }
-  }
+  }, [applications])
 
-  const updateApplicationStatus = async (applicationId, newStatus, notes = '', recruiterName = '', reviewData = {}) => {
+  const updateApplicationStatus = useCallback(async (applicationId, newStatus, notes = '', recruiterName = '', reviewData = {}) => {
     try {
       const updates = {
         status: newStatus,
@@ -86,30 +86,30 @@ export const ApplicationProvider = ({ children }) => {
       console.error('Error updating application status:', error)
       throw error
     }
-  }
+  }, [])
 
-  const getApplicationByJobId = (jobId, userId) => {
+  const getApplicationByJobId = useCallback((jobId, userId) => {
     if (userId == null) return applications.find(app => app.jobId === jobId)
     return applications.find(app => app.jobId === jobId && app.userId === userId)
-  }
+  }, [applications])
 
-  const getApplicationsByStatus = (status) => {
+  const getApplicationsByStatus = useCallback((status) => {
     return applications.filter(app => app.status === status)
-  }
+  }, [applications])
 
-  const getApplicationsByRating = (minRating) => {
+  const getApplicationsByRating = useCallback((minRating) => {
     return applications.filter(app => (app.rating || 0) >= minRating)
-  }
+  }, [applications])
 
-  const getApplicationsNeedingReview = () => {
+  const getApplicationsNeedingReview = useCallback(() => {
     return applications.filter(app =>
       app.status === 'Applied' ||
       app.status === 'Under Review' ||
       !app.reviewedBy
     )
-  }
+  }, [applications])
 
-  const getReviewStats = () => {
+  const getReviewStats = useCallback(() => {
     const total = applications.length
     const reviewed = applications.filter(app => app.reviewedBy).length
     const avgRating = applications.reduce((sum, app) => sum + (app.rating || 0), 0) / total || 0
@@ -122,9 +122,9 @@ export const ApplicationProvider = ({ children }) => {
       avgRating: Math.round(avgRating * 10) / 10,
       highRated
     }
-  }
+  }, [applications])
 
-  const value = {
+  const value = useMemo(() => ({
     applications,
     loading,
     applyToJob,
@@ -134,7 +134,7 @@ export const ApplicationProvider = ({ children }) => {
     getApplicationsByRating,
     getApplicationsNeedingReview,
     getReviewStats
-  }
+  }), [applications, loading, applyToJob, updateApplicationStatus, getApplicationByJobId, getApplicationsByStatus, getApplicationsByRating, getApplicationsNeedingReview, getReviewStats])
 
   return (
     <ApplicationContext.Provider value={value}>

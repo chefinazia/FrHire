@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import apiClient from '../api/client.js'
 
@@ -125,7 +125,7 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [])
 
-  const addNotification = async (notification) => {
+  const addNotification = useCallback(async (notification) => {
     try {
       const newNotification = {
         user_id: notification.userId || notification.toUserId,
@@ -162,9 +162,9 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error adding notification:', error)
       throw error
     }
-  }
+  }, [])
 
-  const markAsRead = async (notificationId) => {
+  const markAsRead = useCallback(async (notificationId) => {
     try {
       await apiClient.markNotificationAsRead(notificationId)
       const updatedNotifications = notifications.map(notification =>
@@ -179,9 +179,9 @@ export const NotificationProvider = ({ children }) => {
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
-  }
+  }, [notifications])
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     const updatedNotifications = notifications.map(notification => ({
       ...notification,
       read: true
@@ -191,86 +191,88 @@ export const NotificationProvider = ({ children }) => {
     if (channelRef.current) {
       channelRef.current.postMessage({ notifications: updatedNotifications })
     }
-  }
+  }, [notifications])
 
-  const getUnreadCount = () => {
+  const getUnreadCount = useCallback(() => {
     return notifications.filter(notification => !notification.is_read).length
-  }
+  }, [notifications])
 
-  const getNotificationsByUserId = (userId) => {
+  const getNotificationsByUserId = useCallback((userId) => {
     return notifications.filter(notification => notification.userId === userId)
-  }
+  }, [notifications])
 
-  const value = {
+  const buildNotificationTemplate = useCallback((kind, { application, recruiterName, status, rating, feedback } = {}) => {
+    const jobTitle = application?.jobTitle || 'the position'
+    switch (kind) {
+      case 'review_received': {
+        const safeRating = typeof rating === 'number' ? rating : (application?.rating || 0)
+        return {
+          type: 'review_received',
+          title: `New review from ${recruiterName || 'Recruiter'}`,
+          message: `Your application for ${jobTitle} was reviewed. Rating: ${safeRating}/5.${feedback ? ' Feedback: ' + feedback : ''}`,
+          rating: safeRating,
+          feedback: feedback || application?.feedback || '',
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      case 'status_update': {
+        const s = status || application?.status || 'Updated'
+        let title = 'Application status updated'
+        if (s === 'Interview Scheduled') title = 'Interview scheduled'
+        if (s === 'Accepted') title = 'Congratulations! You were accepted'
+        if (s === 'Rejected') title = 'Application decision: Rejected'
+        if (s === 'Under Review') title = 'Application moved to Under Review'
+        return {
+          type: 'status_update',
+          title,
+          message: `Your application for ${jobTitle} is now: ${s}.`,
+          status: s,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      case 'notes_added': {
+        return {
+          type: 'notes_added',
+          title: 'New note added by recruiter',
+          message: `A new note was added to your application for ${jobTitle}.`,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      default:
+        return {
+          type: 'application_update',
+          title: 'Application updated',
+          message: `There is a new update on your application for ${jobTitle}.`,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+    }
+  }, [])
+
+  const notifyForApplication = useCallback((kind, params) => {
+    const n = (typeof kind === 'object' ? kind : null) || ({});
+    const template = n.type ? n : (typeof kind === 'string' ? buildNotificationTemplate(kind, params) : null)
+    if (!template) return null
+    return addNotification(template)
+  }, [buildNotificationTemplate, addNotification])
+
+  const value = useMemo(() => ({
     notifications,
     addNotification,
-    // Template builder for consistent messages
-    buildNotificationTemplate: (kind, { application, recruiterName, status, rating, feedback } = {}) => {
-      const jobTitle = application?.jobTitle || 'the position'
-      switch (kind) {
-        case 'review_received': {
-          const safeRating = typeof rating === 'number' ? rating : (application?.rating || 0)
-          return {
-            type: 'review_received',
-            title: `New review from ${recruiterName || 'Recruiter'}`,
-            message: `Your application for ${jobTitle} was reviewed. Rating: ${safeRating}/5.${feedback ? ' Feedback: ' + feedback : ''}`,
-            rating: safeRating,
-            feedback: feedback || application?.feedback || '',
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        case 'status_update': {
-          const s = status || application?.status || 'Updated'
-          let title = 'Application status updated'
-          if (s === 'Interview Scheduled') title = 'Interview scheduled'
-          if (s === 'Accepted') title = 'Congratulations! You were accepted'
-          if (s === 'Rejected') title = 'Application decision: Rejected'
-          if (s === 'Under Review') title = 'Application moved to Under Review'
-          return {
-            type: 'status_update',
-            title,
-            message: `Your application for ${jobTitle} is now: ${s}.`,
-            status: s,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        case 'notes_added': {
-          return {
-            type: 'notes_added',
-            title: 'New note added by recruiter',
-            message: `A new note was added to your application for ${jobTitle}.`,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        default:
-          return {
-            type: 'application_update',
-            title: 'Application updated',
-            message: `There is a new update on your application for ${jobTitle}.`,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-      }
-    },
-    // High-level helper: build + enqueue + push via WS
-    notifyForApplication: (kind, params) => {
-      const n = (typeof kind === 'object' ? kind : null) || ({});
-      const template = n.type ? n : (typeof kind === 'string' ? value.buildNotificationTemplate(kind, params) : null)
-      if (!template) return null
-      return addNotification(template)
-    },
+    buildNotificationTemplate,
+    notifyForApplication,
     markAsRead,
     markAllAsRead,
     getUnreadCount,
     getNotificationsByUserId
-  }
+  }), [notifications, addNotification, buildNotificationTemplate, notifyForApplication, markAsRead, markAllAsRead, getUnreadCount, getNotificationsByUserId])
 
   return (
     <NotificationContext.Provider value={value}>

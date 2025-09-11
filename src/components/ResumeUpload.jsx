@@ -17,6 +17,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [isAnalyzingInProgress, setIsAnalyzingInProgress] = useState(false)
   const [uploadedResume, setUploadedResume] = useState(null)
+  const hasLoadedRef = useRef(false)
   const [atsAnalysis, setAtsAnalysis] = useState(null)
   const [showSmartForm, setShowSmartForm] = useState(false)
   const [improvedResumeData, setImprovedResumeData] = useState(null)
@@ -54,7 +55,8 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   // Load existing resume data when user changes (only on initial load)
   useEffect(() => {
-    if (user?.id && isInitialLoad) {
+    if (user?.id && isInitialLoad && !hasLoadedRef.current) {
+      hasLoadedRef.current = true
       loadExistingResume()
       setIsInitialLoad(false)
     }
@@ -938,7 +940,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       console.log('Analysis already in progress, skipping...')
       return null
     }
-    
+
     setIsAnalyzingInProgress(true)
     try {
       let extractedText = '';
