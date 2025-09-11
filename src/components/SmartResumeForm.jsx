@@ -56,6 +56,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
         contactInfo: extractedData.contactInfo || { name: '', email: '', phone: '', location: '' }
       }
       setFormData(safeData)
+      setIsFormVisible(true) // Show form when data is extracted
       return
     }
 
@@ -96,12 +97,20 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
     // Set the extracted data
     setFormData(dataToUse)
+    setIsFormVisible(true) // Show form when data is extracted from analysis
   }, [atsAnalysis, extractedData])
 
   // Reset initialization ref when extractedData changes
   useEffect(() => {
     hasInitializedRef.current = false
   }, [extractedData])
+
+  // Ensure form is visible when we have data
+  useEffect(() => {
+    if (formData && (formData.contactInfo?.name || formData.summary || formData.skills?.length > 0)) {
+      setIsFormVisible(true)
+    }
+  }, [formData])
 
   // Handle forceShow prop to reset form visibility
   useEffect(() => {
