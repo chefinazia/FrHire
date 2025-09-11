@@ -32,7 +32,12 @@ export const parsePDFText = async (file) => {
         if (textMatches) {
           for (const match of textMatches) {
             const text = match.slice(1, -1) // Remove parentheses
-            if (text.length > 1 && /[a-zA-Z]/.test(text)) {
+            // Filter out PDF metadata and formatting
+            if (text.length > 1 && 
+                /[a-zA-Z]/.test(text) &&
+                !text.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
+                !text.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
+                text.length < 100) { // Not too long (likely metadata)
               extractedText += text + ' '
             }
           }
@@ -43,20 +48,31 @@ export const parsePDFText = async (file) => {
     // Method 2: Extract readable text patterns
     if (extractedText.length < 100) {
       console.log('Trying alternative text extraction...')
-
-      // Look for common text patterns in PDF
+      
+      // Look for common text patterns in PDF, filtering out metadata
       const textPatterns = [
-        /[A-Za-z][A-Za-z0-9\s,.-]{10,}/g, // Words and sentences
+        /[A-Za-z][A-Za-z0-9\s,.-]{5,}/g, // Words and sentences (reduced minimum length)
         /[A-Za-z]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, // Email addresses
         /[A-Za-z\s]+,\s*[A-Z]{2}/g, // City, State
         /\(\d{3}\)\s*\d{3}-\d{4}/g, // Phone numbers
-        /\d{4}/g // Years
+        /\b(19|20)\d{2}\b/g, // Years (1900-2099)
+        /\b[A-Z][a-z]+\s+[A-Z][a-z]+/g, // Names (First Last)
+        /\b(Software|Engineer|Developer|Manager|Analyst|Designer|Specialist|Coordinator|Director|Lead|Senior|Junior|Intern)\b/gi, // Job titles
+        /\b(JavaScript|Python|Java|C\+\+|React|Angular|Vue|Node\.js|HTML|CSS|SQL|MongoDB|MySQL|AWS|Azure|Docker|Git|Linux|Windows|macOS)\b/gi // Tech skills
       ]
-
+      
       for (const pattern of textPatterns) {
         const matches = pdfString.match(pattern)
         if (matches) {
-          extractedText += matches.join(' ') + ' '
+          // Filter out PDF metadata from matches
+          const filteredMatches = matches.filter(match => 
+            !match.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
+            !match.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
+            match.length < 100 // Not too long
+          )
+          if (filteredMatches.length > 0) {
+            extractedText += filteredMatches.join(' ') + ' '
+          }
         }
       }
     }
@@ -64,20 +80,22 @@ export const parsePDFText = async (file) => {
     // Method 3: Extract all readable ASCII text
     if (extractedText.length < 50) {
       console.log('Using basic ASCII text extraction...')
-
+      
       // Extract all readable ASCII characters
       const readableText = pdfString
         .replace(/[^\x20-\x7E\s]/g, ' ') // Replace non-printable chars
         .replace(/\s+/g, ' ') // Normalize whitespace
         .trim()
-
-      // Filter out very short or meaningless text
-      const words = readableText.split(' ').filter(word =>
-        word.length > 2 &&
-        /[a-zA-Z]/.test(word) &&
-        !/^[0-9\s]+$/.test(word)
+      
+      // Filter out very short or meaningless text and PDF metadata
+      const words = readableText.split(' ').filter(word => 
+        word.length > 2 && 
+        /[a-zA-Z]/.test(word) && 
+        !/^[0-9\s]+$/.test(word) &&
+        !word.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
+        word.length < 50 // Not too long
       )
-
+      
       extractedText = words.join(' ')
     }
 
@@ -174,7 +192,7 @@ export const parseResumeText = (resumeText) => {
  */
 const extractContactInfo = (text) => {
   console.log('Extracting contact info from text:', text.substring(0, 200) + '...')
-  
+
   const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
   const phoneRegex = /(\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/g
   const linkedinRegex = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?/gi
@@ -190,23 +208,23 @@ const extractContactInfo = (text) => {
   // Extract name (usually first line or before email)
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
   console.log('First 5 lines:', lines.slice(0, 5))
-  
+
   let name = ''
 
   // Look for name in first few lines - improved logic
   for (let i = 0; i < Math.min(5, lines.length); i++) {
     const line = lines[i]
     console.log(`Checking line ${i}: "${line}"`)
-    
+
     // More flexible name detection
-    if (line.length > 2 && 
-        line.length < 50 && 
-        !line.includes('@') && 
-        !line.includes('http') &&
-        !line.toLowerCase().includes('resume') &&
-        !line.toLowerCase().includes('cv') &&
-        !line.toLowerCase().includes('curriculum') &&
-        /[A-Za-z]/.test(line)) {
+    if (line.length > 2 &&
+      line.length < 50 &&
+      !line.includes('@') &&
+      !line.includes('http') &&
+      !line.toLowerCase().includes('resume') &&
+      !line.toLowerCase().includes('cv') &&
+      !line.toLowerCase().includes('curriculum') &&
+      /[A-Za-z]/.test(line)) {
       name = line
       console.log('Found name:', name)
       break
@@ -400,13 +418,13 @@ const extractSkills = (text) => {
   }
 
   const uniqueSkills = [...new Set(skills)]
-  
+
   // If no skills found, provide some default technical skills
   if (uniqueSkills.length === 0) {
     console.log('No skills found, using default skills')
     return ['JavaScript', 'React', 'Node.js', 'Python', 'HTML', 'CSS', 'Git']
   }
-  
+
   console.log('Extracted skills:', uniqueSkills)
   return uniqueSkills.slice(0, 20) // Remove duplicates and limit to 20
 }

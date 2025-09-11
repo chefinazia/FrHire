@@ -75,19 +75,28 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   // Comprehensive ATS Keywords for ALL technology stacks and fields
   const atsKeywords = useMemo(() => ({
-    // Frontend Technologies
+    // Frontend Technologies - Expanded
     frontend: [
       'react', 'vue.js', 'angular', 'svelte', 'next.js', 'nuxt.js', 'gatsby',
       'javascript', 'typescript', 'html', 'css', 'sass', 'scss', 'less',
       'tailwind', 'bootstrap', 'material-ui', 'chakra-ui', 'styled-components',
-      'webpack', 'vite', 'parcel', 'rollup', 'babel', 'eslint', 'prettier'
+      'webpack', 'vite', 'parcel', 'rollup', 'babel', 'eslint', 'prettier',
+      'jsx', 'tsx', 'js', 'ts', 'frontend', 'ui', 'ux', 'user interface',
+      'responsive', 'mobile-first', 'cross-browser', 'accessibility', 'a11y',
+      'jquery', 'lodash', 'moment', 'dayjs', 'axios', 'fetch', 'ajax',
+      'redux', 'mobx', 'zustand', 'recoil', 'context api', 'hooks',
+      'graphql', 'apollo', 'relay', 'rest api', 'json', 'xml'
     ],
-    // Backend Technologies
+    // Backend Technologies - Expanded
     backend: [
       'node.js', 'express', 'nest.js', 'python', 'django', 'flask', 'fastapi',
       'java', 'spring', 'spring boot', 'hibernate', 'c#', '.net', 'asp.net',
       'php', 'laravel', 'symfony', 'ruby', 'rails', 'go', 'gin', 'rust',
-      'kotlin', 'scala', 'clojure', 'elixir', 'phoenix'
+      'kotlin', 'scala', 'clojure', 'elixir', 'phoenix', 'backend', 'api',
+      'microservices', 'serverless', 'lambda', 'functions', 'middleware',
+      'authentication', 'authorization', 'jwt', 'oauth', 'session', 'cookies',
+      'rest', 'graphql', 'grpc', 'soap', 'websocket', 'socket.io', 'server',
+      'endpoint', 'controller', 'service', 'repository', 'model', 'entity'
     ],
     // Mobile Development
     mobile: [
@@ -900,7 +909,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       console.log('=== ANALYZING RESUME TEXT ===')
       console.log('Text length:', text.length)
       console.log('Text preview:', text.substring(0, 300) + '...')
-      
+
       // Parse the text using our enhanced parser
       const parsedData = parseResumeText(text)
       console.log('Parsed data result:', parsedData)
@@ -910,7 +919,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         console.log('Contact info:', parsedData.contactInfo)
         console.log('Skills:', parsedData.skills)
         console.log('Summary:', parsedData.summary)
-        
+
         const analysis = performATSAnalysis(text)
         const atsScoreResult = calculateATSScore(parsedData)
 
@@ -963,7 +972,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
           console.log('File name:', file.name)
           console.log('File size:', file.size, 'bytes')
           console.log('File type:', file.type)
-          
+
           extractedText = await parsePDFText(file)
           console.log('PDF text extracted successfully!')
           console.log('Text length:', extractedText.length)
@@ -1230,7 +1239,11 @@ CERTIFICATIONS
         const weight = categoryWeights[category] || 1
         maxPossibleScore += weight
 
-        if (resumeText.includes(keyword.toLowerCase())) {
+        // More flexible keyword matching
+        const keywordLower = keyword.toLowerCase()
+        const keywordRegex = new RegExp(`\\b${keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+        
+        if (resumeText.includes(keywordLower) || keywordRegex.test(resumeText)) {
           foundKeywords[category].push(keyword)
           categoryFound++
           totalScore += weight
@@ -1247,16 +1260,16 @@ CERTIFICATIONS
     // Calculate overall ATS score (more strict)
     const atsScore = Math.round((totalScore / maxPossibleScore) * 100)
 
-    // Enhanced structure analysis
+    // Enhanced structure analysis - More flexible matching
     const structureAnalysis = {
-      hasContactInfo: resumeText.includes('email') || resumeText.includes('phone') || resumeText.includes('@'),
-      hasExperience: resumeText.includes('experience') || resumeText.includes('work') || resumeText.includes('employed'),
-      hasEducation: resumeText.includes('education') || resumeText.includes('degree') || resumeText.includes('university') || resumeText.includes('college'),
-      hasSkills: resumeText.includes('skills') || resumeText.includes('technologies') || resumeText.includes('programming'),
-      hasProjects: resumeText.includes('project') || resumeText.includes('portfolio') || resumeText.includes('github'),
-      hasCertifications: resumeText.includes('certified') || resumeText.includes('certification') || resumeText.includes('license'),
-      hasMetrics: /\d+%|\d+x|\$\d+|\d+\s*(users|customers|revenue|growth|improvement|reduction|increase)/i.test(resumeText),
-      hasActionVerbs: foundKeywords.experience.length > 3,
+      hasContactInfo: /email|phone|@|contact|address|location/i.test(resumeText),
+      hasExperience: /experience|work|employed|career|professional|employment|job|position|role/i.test(resumeText),
+      hasEducation: /education|degree|university|college|bachelor|master|phd|diploma|certificate|graduated/i.test(resumeText),
+      hasSkills: /skills|technologies|programming|technical|competencies|expertise|proficient/i.test(resumeText),
+      hasProjects: /project|portfolio|github|repository|repo|built|developed|created|designed/i.test(resumeText),
+      hasCertifications: /certified|certification|license|credential|accreditation|badge/i.test(resumeText),
+      hasMetrics: /\d+%|\d+x|\$\d+|\d+\s*(users|customers|revenue|growth|improvement|reduction|increase|years|months|days)/i.test(resumeText),
+      hasActionVerbs: foundKeywords.experience?.length > 3 || /developed|created|built|designed|implemented|managed|led|improved|increased|reduced|optimized/i.test(resumeText),
       standardSections: 0
     }
 
