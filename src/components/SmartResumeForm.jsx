@@ -14,7 +14,6 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   const [needsImprovement, setNeedsImprovement] = useState({})
   const [isFormVisible, setIsFormVisible] = useState(false)
   const isUpdatingRef = useRef(false)
-  const hasInitializedRef = useRef(false)
   const [validationErrors, setValidationErrors] = useState({})
   const [isExporting, setIsExporting] = useState(false)
 
@@ -39,7 +38,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   }, [atsAnalysis])
 
   const extractResumeData = useCallback(() => {
-    console.log('extractResumeData called:', { extractedData: !!extractedData, hasInitialized: hasInitializedRef.current })
+    console.log('extractResumeData called:', { extractedData: !!extractedData })
     
     // Use extracted data if provided, otherwise fall back to analysis-based extraction
     if (extractedData) {
@@ -59,7 +58,6 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
       console.log('Setting form data:', safeData)
       setFormData(safeData)
       setIsFormVisible(true) // Show form when data is extracted
-      hasInitializedRef.current = true
       return
     }
 
@@ -103,10 +101,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
     setIsFormVisible(true) // Show form when data is extracted from analysis
   }, [atsAnalysis, extractedData])
 
-  // Reset initialization ref when extractedData changes
-  useEffect(() => {
-    hasInitializedRef.current = false
-  }, [extractedData])
+  // Reset initialization ref when extractedData changes (removed to prevent issues)
 
   // Call analysis and extraction when data is available
   useEffect(() => {
@@ -116,7 +111,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
       analyzeNeedsImprovement()
       extractResumeData()
     }
-  }, [atsAnalysis, extractedData, analyzeNeedsImprovement, extractResumeData])
+  }, [atsAnalysis, extractedData])
 
   // Ensure form is visible when we have data
   useEffect(() => {
@@ -419,7 +414,7 @@ ${Array.isArray(formData.certifications) ? formData.certifications.map(cert =>
         <p className="text-yellow-700 mb-4">
           Has atsAnalysis: {atsAnalysis ? 'Yes' : 'No'}
         </p>
-        <button 
+        <button
           onClick={() => setIsFormVisible(true)}
           className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
         >
