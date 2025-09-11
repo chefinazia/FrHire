@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import PropTypes from 'prop-types'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../context/NotificationContext'
@@ -72,7 +72,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   }, [forceShowForm])
 
   // Comprehensive ATS Keywords for ALL technology stacks and fields
-  const atsKeywords = {
+  const atsKeywords = useMemo(() => ({
     // Frontend Technologies
     frontend: [
       'react', 'vue.js', 'angular', 'svelte', 'next.js', 'nuxt.js', 'gatsby',
@@ -167,9 +167,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       'inventory management', 'order management', 'customer analytics',
       'conversion optimization', 'seo', 'digital marketing', 'crm'
     ]
-  }
+  }), [])
 
-  const handleFileSelect = (event) => {
+  const handleFileSelect = useCallback((event) => {
     const file = event.target.files[0]
     if (file) {
       // Strict file validation
@@ -181,9 +181,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         event.target.value = ''
       }
     }
-  }
+  }, [])
 
-  const validateFile = (file) => {
+  const validateFile = useCallback((file) => {
     // Check file type
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       return { isValid: false, error: 'Only PDF files are allowed. Please convert your resume to PDF format.' }
@@ -203,10 +203,10 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     }
 
     return { isValid: true }
-  }
+  }, [])
 
   // Reset all state to initial values (for delete/upload new resume)
-  const resetAllState = () => {
+  const resetAllState = useCallback(() => {
     setUploadedResume(null)
     setAtsAnalysis(null)
     setAtsScore(null)
@@ -222,9 +222,14 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
-  }
+  }, [])
 
-  const handleResumeUpload = async (file) => {
+  const handleResumeUpload = useCallback(async (file) => {
+    if (isAnalyzingInProgress) {
+      console.log('Analysis already in progress, skipping upload...')
+      return
+    }
+
     setIsUploading(true)
     setIsAnalyzing(true)
     setIsInitialLoad(false) // Prevent loading existing data during upload
@@ -287,10 +292,10 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       setIsUploading(false)
       setIsAnalyzing(false)
     }
-  }
+  }, [isAnalyzingInProgress, onCoinsUpdate, addNotification, user?.id, onResumeAnalyzed])
 
 
-  const handleSmartFormSubmit = async (formData) => {
+  const handleSmartFormSubmit = useCallback(async (formData) => {
     try {
       // Save resume data to database
       const saveResult = await saveResume(formData, user?.id)
@@ -326,9 +331,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
         userId: user?.id
       })
     }
-  }
+  }, [user?.id, onCoinsUpdate, addNotification])
 
-  const handleSmartFormUpdate = async (formData) => {
+  const handleSmartFormUpdate = useCallback(async (formData) => {
     setImprovedResumeData(formData)
 
     // Auto-save as draft while user is editing
@@ -341,9 +346,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     } catch (error) {
       console.error('Error auto-saving resume:', error)
     }
-  }
+  }, [user?.id])
 
-  const extractResumeDataForForm = (resumeText) => {
+  const extractResumeDataForForm = useCallback((resumeText) => {
     // Use resumeText parameter
     // Extract data from Rachit Arora's resume
     return {
@@ -432,7 +437,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       ],
       summary: '6+ years of experience in building, scaling, and optimizing MERN stack applications across healthcare, CRM, and enterprise domains. Expertise in Node.js, React.js, Nest.js, MongoDB, AWS, Docker, Kubernetes, and CI/CD. Strong background in API design, microservices, cloud-native solutions, and mentoring 100+ learners as JavaScript Coach at Topmate.io.'
     }
-  }
+  }, [])
 
   // Enhanced AI Resume Parser with Better Pattern Matching
   // const parseResumeWithAI = (resumeText) => {
@@ -888,7 +893,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   }
 } */
 
-  const analyzeResumeFromText = async (text) => {
+  const analyzeResumeFromText = useCallback(async (text) => {
     try {
       // Parse the text using our enhanced parser
       const parsedData = parseResumeText(text)
@@ -926,9 +931,9 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       console.error('Resume text analysis error:', error)
       return null
     }
-  }
+  }, [user?.id])
 
-  const analyzeResume = async (file) => {
+  const analyzeResume = useCallback(async (file) => {
     if (isAnalyzingInProgress) {
       console.log('Analysis already in progress, skipping...')
       return null
@@ -1164,9 +1169,9 @@ CERTIFICATIONS
     } finally {
       setIsAnalyzingInProgress(false)
     }
-  }
+  }, [isAnalyzingInProgress, user?.id])
 
-  const performATSAnalysis = (resumeText) => {
+  const performATSAnalysis = useCallback((resumeText) => {
     // Use resumeText for analysis
     const text = resumeText.toLowerCase()
     const foundKeywords = {}
@@ -1323,19 +1328,19 @@ CERTIFICATIONS
         keywordDensity: (overallFoundCount / resumeText.split(' ').length * 100).toFixed(2)
       }
     }
-  }
+  }, [atsKeywords])
 
-  const handleDragOver = (e) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault()
     e.currentTarget.classList.add('border-blue-500', 'bg-blue-50')
-  }
+  }, [])
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = useCallback((e) => {
     e.preventDefault()
     e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50')
-  }
+  }, [])
 
-  const handleDrop = (e) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault()
     e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50')
 
@@ -1349,7 +1354,7 @@ CERTIFICATIONS
         alert(validationResult.error)
       }
     }
-  }
+  }, [validateFile])
 
   return (
     <div className="space-y-6">
@@ -1847,4 +1852,12 @@ ResumeUpload.propTypes = {
   onCoinsUpdate: PropTypes.func.isRequired
 }
 
-export default ResumeUpload
+// Custom comparison function to prevent unnecessary re-renders
+const arePropsEqual = (prevProps, nextProps) => {
+  return (
+    prevProps.onResumeAnalyzed === nextProps.onResumeAnalyzed &&
+    prevProps.onCoinsUpdate === nextProps.onCoinsUpdate
+  )
+}
+
+export default memo(ResumeUpload, arePropsEqual)
