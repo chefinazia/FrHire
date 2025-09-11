@@ -196,14 +196,23 @@ const extractContactInfo = (text) => {
   const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
   const phoneRegex = /(\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/g
   const linkedinRegex = /(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?/gi
+  const githubRegex = /(?:https?:\/\/)?(?:www\.)?github\.com\/[a-zA-Z0-9-]+\/?/gi
+  const twitterRegex = /(?:https?:\/\/)?(?:www\.)?twitter\.com\/[a-zA-Z0-9_]+\/?/gi
+  const portfolioRegex = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/gi
 
   const emails = text.match(emailRegex) || []
   const phones = text.match(phoneRegex) || []
   const linkedin = text.match(linkedinRegex) || []
+  const github = text.match(githubRegex) || []
+  const twitter = text.match(twitterRegex) || []
+  const portfolio = text.match(portfolioRegex) || []
 
   console.log('Found emails:', emails)
   console.log('Found phones:', phones)
   console.log('Found linkedin:', linkedin)
+  console.log('Found github:', github)
+  console.log('Found twitter:', twitter)
+  console.log('Found portfolio:', portfolio)
 
   // Extract name (usually first line or before email)
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
@@ -251,7 +260,10 @@ const extractContactInfo = (text) => {
     email: emails[0] || 'john@example.com', // Default fallback
     phone: phones[0] || '555-1234', // Default fallback
     location: locations[0] || 'City, State', // Default fallback
-    linkedin: linkedin[0] || ''
+    linkedin: linkedin[0] || '',
+    github: github[0] || '',
+    twitter: twitter[0] || '',
+    portfolio: portfolio[0] || ''
   }
 
   console.log('Extracted contact info:', contactInfo)
@@ -279,17 +291,17 @@ const extractExperience = (text) => {
 
     // Check if we're entering experience section - more patterns
     if (line.includes('experience') || line.includes('employment') || line.includes('work history') ||
-        line.includes('professional experience') || line.includes('work experience') ||
-        line.includes('career') || line.includes('employment history')) {
+      line.includes('professional experience') || line.includes('work experience') ||
+      line.includes('career') || line.includes('employment history')) {
       inExperienceSection = true
       console.log('Found experience section at line', i, ':', originalLine)
       continue
     }
 
     // Check if we're leaving experience section
-    if (inExperienceSection && (line.includes('education') || line.includes('skills') || 
-        line.includes('projects') || line.includes('certifications') || line.includes('summary') ||
-        line.includes('objective') || line.includes('about'))) {
+    if (inExperienceSection && (line.includes('education') || line.includes('skills') ||
+      line.includes('projects') || line.includes('certifications') || line.includes('summary') ||
+      line.includes('objective') || line.includes('about'))) {
       console.log('Leaving experience section at line', i, ':', originalLine)
       break
     }
@@ -343,7 +355,7 @@ const extractExperience = (text) => {
   // If no experience found through section detection, try fallback parsing
   if (experience.length === 0) {
     console.log('No experience found through section detection, trying fallback parsing...')
-    
+
     // Look for job title patterns throughout the entire text
     const jobTitlePatterns = [
       'developer', 'engineer', 'manager', 'analyst', 'specialist', 'coordinator',
@@ -351,17 +363,17 @@ const extractExperience = (text) => {
       'designer', 'programmer', 'coder', 'scientist', 'researcher',
       'administrator', 'supervisor', 'executive', 'officer', 'representative'
     ]
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].toLowerCase()
       const originalLine = lines[i]
-      
+
       // Check if this line looks like a job title
-      const isJobTitle = jobTitlePatterns.some(pattern => line.includes(pattern)) && 
-                        line.length > 5 && line.length < 100 &&
-                        !line.includes('education') && !line.includes('skills') &&
-                        !line.includes('projects') && !line.includes('certifications')
-      
+      const isJobTitle = jobTitlePatterns.some(pattern => line.includes(pattern)) &&
+        line.length > 5 && line.length < 100 &&
+        !line.includes('education') && !line.includes('skills') &&
+        !line.includes('projects') && !line.includes('certifications')
+
       if (isJobTitle) {
         console.log('Found potential job title:', originalLine)
         experience.push({
@@ -408,16 +420,16 @@ const extractEducation = (text) => {
 
     // Check if we're entering education section - more patterns
     if (line.includes('education') || line.includes('academic') || line.includes('educational') ||
-        line.includes('degree') || line.includes('university') || line.includes('college')) {
+      line.includes('degree') || line.includes('university') || line.includes('college')) {
       inEducationSection = true
       console.log('Found education section at line', i, ':', originalLine)
       continue
     }
 
     // Check if we're leaving education section
-    if (inEducationSection && (line.includes('experience') || line.includes('skills') || 
-        line.includes('projects') || line.includes('certifications') || line.includes('summary') ||
-        line.includes('objective') || line.includes('about'))) {
+    if (inEducationSection && (line.includes('experience') || line.includes('skills') ||
+      line.includes('projects') || line.includes('certifications') || line.includes('summary') ||
+      line.includes('objective') || line.includes('about'))) {
       console.log('Leaving education section at line', i, ':', originalLine)
       break
     }
@@ -464,24 +476,24 @@ const extractEducation = (text) => {
   // If no education found through section detection, try fallback parsing
   if (education.length === 0) {
     console.log('No education found through section detection, trying fallback parsing...')
-    
+
     // Look for degree patterns throughout the entire text
     const degreePatterns = [
       'bachelor', 'master', 'phd', 'ph.d', 'doctorate', 'degree', 'diploma',
       'certificate', 'associate', 'b.s', 'b.a', 'm.s', 'm.a', 'mba', 'msc',
       'bsc', 'ba', 'ma', 'bs', 'ms', 'phd', 'dphil'
     ]
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].toLowerCase()
       const originalLine = lines[i]
-      
+
       // Check if this line looks like a degree
-      const isDegree = degreePatterns.some(pattern => line.includes(pattern)) && 
-                      line.length > 5 && line.length < 100 &&
-                      !line.includes('experience') && !line.includes('skills') &&
-                      !line.includes('projects') && !line.includes('certifications')
-      
+      const isDegree = degreePatterns.some(pattern => line.includes(pattern)) &&
+        line.length > 5 && line.length < 100 &&
+        !line.includes('experience') && !line.includes('skills') &&
+        !line.includes('projects') && !line.includes('certifications')
+
       if (isDegree) {
         console.log('Found potential degree:', originalLine)
         education.push({

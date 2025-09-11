@@ -1242,7 +1242,7 @@ CERTIFICATIONS
         // More flexible keyword matching
         const keywordLower = keyword.toLowerCase()
         const keywordRegex = new RegExp(`\\b${keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
-        
+
         if (resumeText.includes(keywordLower) || keywordRegex.test(resumeText)) {
           foundKeywords[category].push(keyword)
           categoryFound++

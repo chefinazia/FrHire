@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useCallback, memo } from 'react'
 import PropTypes from 'prop-types'
 import { useAuth } from '../context/AuthContext'
 
@@ -40,24 +40,24 @@ const ResumeBuilder = ({ onExported }) => {
   const previewRef = useRef(null)
   const [isExporting, setIsExporting] = useState(false)
 
-  const handleChange = (field, value) => {
+  const handleChange = useCallback((field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
-  }
+  }, [])
 
-  const handleArrayChange = (section, idx, field, value) => {
+  const handleArrayChange = useCallback((section, idx, field, value) => {
     setForm(prev => ({
       ...prev,
       [section]: prev[section].map((item, i) => i === idx ? { ...item, [field]: value } : item)
     }))
-  }
+  }, [])
 
-  const addItem = (section, template) => {
+  const addItem = useCallback((section, template) => {
     setForm(prev => ({ ...prev, [section]: [...prev[section], template] }))
-  }
+  }, [])
 
-  const removeItem = (section, idx) => {
+  const removeItem = useCallback((section, idx) => {
     setForm(prev => ({ ...prev, [section]: prev[section].filter((_, i) => i !== idx) }))
-  }
+  }, [])
 
   // Simple ATS guidance
   const atsHints = useMemo(() => {
@@ -98,7 +98,7 @@ const ResumeBuilder = ({ onExported }) => {
     return { found, missing, score, rating, color, recommendations }
   }, [form])
 
-  const exportToPdf = async () => {
+  const exportToPdf = useCallback(async () => {
     setIsExporting(true)
     try {
       // Try image-based PDF generation first
@@ -109,16 +109,16 @@ const ResumeBuilder = ({ onExported }) => {
         ])
 
         const node = previewRef.current
-        const canvas = await html2canvas(node, { 
-          scale: 2, 
-          useCORS: true, 
+        const canvas = await html2canvas(node, {
+          scale: 2,
+          useCORS: true,
           backgroundColor: '#ffffff',
           allowTaint: true,
           logging: false
         })
-        
+
         const imgData = canvas.toDataURL('image/png', 1.0)
-        
+
         // Create PDF with proper configuration
         const pdf = new jsPDF({
           orientation: 'portrait',
@@ -134,7 +134,7 @@ const ResumeBuilder = ({ onExported }) => {
         // Calculate dimensions with margins
         const imgWidth = pageWidth - (margin * 2)
         const imgHeight = (canvas.height * imgWidth) / canvas.width
-        
+
         let heightLeft = imgHeight
         let position = margin
 
@@ -153,15 +153,15 @@ const ResumeBuilder = ({ onExported }) => {
         // Generate filename and save
         const filename = `${(form.fullName || 'resume').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
         pdf.save(filename)
-        
+
         if (onExported) onExported()
         return
       } catch (imageError) {
         console.warn('Image-based PDF generation failed, trying text-based approach:', imageError)
-        
+
         // Fallback to text-based PDF generation
         const { jsPDF } = await import('jspdf')
-        
+
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'pt',
@@ -177,14 +177,14 @@ const ResumeBuilder = ({ onExported }) => {
         // Helper function to add text with word wrapping
         const addText = (text, fontSize = 12, isBold = false, color = '#000000') => {
           if (!text) return yPosition
-          
+
           pdf.setFontSize(fontSize)
           pdf.setFont('helvetica', isBold ? 'bold' : 'normal')
           pdf.setTextColor(color)
-          
+
           const maxWidth = pageWidth - (margin * 2)
           const lines = pdf.splitTextToSize(text, maxWidth)
-          
+
           for (const line of lines) {
             if (yPosition > pageHeight - margin) {
               pdf.addPage()
@@ -193,14 +193,14 @@ const ResumeBuilder = ({ onExported }) => {
             pdf.text(line, margin, yPosition)
             yPosition += fontSize * 1.2
           }
-          
+
           return yPosition
         }
 
         // Header
         yPosition = addText(form.fullName || 'Your Name', 20, true)
         yPosition += 10
-        
+
         // Contact info
         const contactInfo = []
         if (form.email) contactInfo.push(form.email)
@@ -209,7 +209,7 @@ const ResumeBuilder = ({ onExported }) => {
         if (contactInfo.length > 0) {
           yPosition = addText(contactInfo.join(' • '), 10)
         }
-        
+
         // Links
         const links = []
         if (form.linkedin) links.push(`LinkedIn: ${form.linkedin}`)
@@ -218,7 +218,7 @@ const ResumeBuilder = ({ onExported }) => {
         if (links.length > 0) {
           yPosition = addText(links.join(' • '), 10)
         }
-        
+
         yPosition += 20
 
         // Summary
@@ -293,7 +293,7 @@ const ResumeBuilder = ({ onExported }) => {
         // Save PDF
         const filename = `${(form.fullName || 'resume').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
         pdf.save(filename)
-        
+
         if (onExported) onExported()
       }
     } catch (err) {
@@ -302,7 +302,7 @@ const ResumeBuilder = ({ onExported }) => {
     } finally {
       setIsExporting(false)
     }
-  }
+  }, [form.fullName, onExported])
 
   return (
     <div className="space-y-6">
@@ -597,6 +597,6 @@ ResumeBuilder.propTypes = {
   onExported: PropTypes.func
 }
 
-export default ResumeBuilder
+export default memo(ResumeBuilder)
 
 

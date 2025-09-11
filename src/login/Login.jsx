@@ -27,7 +27,7 @@ const Login = () => {
     try {
       // Use API client for login
       const response = await apiClient.login(formData.email, formData.password)
-      
+
       // Login successful, the AuthContext will handle setting the user
       login(response.user, 'mock-token')
     } catch (err) {

@@ -1,0 +1,56 @@
+John Smith
+Software Engineer
+john.smith@email.com
++1 (555) 123-4567
+San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Experienced Full Stack Developer with 5+ years of expertise in JavaScript, React, Node.js, and cloud technologies. Led development of scalable web applications serving 50,000+ users and improved system performance by 40%. Strong background in agile methodologies and team leadership.
+
+TECHNICAL SKILLS
+JavaScript, React.js, Node.js, TypeScript, Python, AWS, Docker, Kubernetes, MongoDB, PostgreSQL, Git, CI/CD, Express.js, Jest, Agile, Jira
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer
+Tech Solutions Inc.
+2021 - Present
+• Led development of microservices architecture serving 50,000+ daily active users
+• Implemented CI/CD pipelines reducing deployment time by 60%
+• Mentored 3 junior developers and conducted code reviews
+• Built RESTful APIs using Node.js and Express.js
+• Improved application performance by 40% through optimization
+
+Software Developer
+StartupXYZ
+2019 - 2021
+• Developed responsive web applications using React.js and Redux
+• Collaborated with cross-functional teams in agile environment
+• Implemented automated testing with Jest and Cypress
+• Deployed applications on AWS using Docker containers
+• Reduced bug reports by 30% through improved testing practices
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+University of California, Berkeley
+2015 - 2019
+GPA: 3.8/4.0
+
+PROJECTS
+
+E-commerce Platform
+• Built full-stack e-commerce application using MERN stack
+• Implemented payment processing with Stripe API
+• Technologies: React, Node.js, MongoDB, Stripe
+• GitHub: github.com/johnsmith/ecommerce
+
+Task Management App
+• Developed collaborative task management tool
+• Real-time updates using WebSocket connections
+• Technologies: React, Socket.io, PostgreSQL
+• Live Demo: taskapp.example.com
+
+CERTIFICATIONS
+AWS Certified Developer Associate - 2022
+Google Cloud Professional Developer - 2021

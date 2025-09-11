@@ -703,16 +703,15 @@ export const createResumePDF = async (formData) => {
     }
 
     // Add social profiles if available
-    if (formData.contactInfo?.socialProfiles) {
-      const socialLinks = [];
-      if (formData.contactInfo.socialProfiles.linkedin) socialLinks.push(`LinkedIn: ${formData.contactInfo.socialProfiles.linkedin}`);
-      if (formData.contactInfo.socialProfiles.github) socialLinks.push(`GitHub: ${formData.contactInfo.socialProfiles.github}`);
-      if (formData.contactInfo.socialProfiles.leetcode) socialLinks.push(`LeetCode: ${formData.contactInfo.socialProfiles.leetcode}`);
+    const socialLinks = [];
+    if (formData.contactInfo?.linkedin) socialLinks.push(`LinkedIn: ${formData.contactInfo.linkedin}`);
+    if (formData.contactInfo?.github) socialLinks.push(`GitHub: ${formData.contactInfo.github}`);
+    if (formData.contactInfo?.portfolio) socialLinks.push(`Portfolio: ${formData.contactInfo.portfolio}`);
+    if (formData.contactInfo?.twitter) socialLinks.push(`Twitter: ${formData.contactInfo.twitter}`);
 
-      if (socialLinks.length > 0) {
-        addText(socialLinks.join(' | '), margin, yPosition, 10, helvetica, rgb(0.42, 0.45, 0.5));
-        yPosition -= lineHeight;
-      }
+    if (socialLinks.length > 0) {
+      addText(socialLinks.join(' | '), margin, yPosition, 10, helvetica, rgb(0.42, 0.45, 0.5));
+      yPosition -= lineHeight;
     }
 
     addLine();
