@@ -14,6 +14,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   const [needsImprovement, setNeedsImprovement] = useState({})
   const [isFormVisible, setIsFormVisible] = useState(false)
   const isUpdatingRef = useRef(false)
+  const hasInitializedRef = useRef(false)
   const [validationErrors, setValidationErrors] = useState({})
   const [isExporting, setIsExporting] = useState(false)
 
@@ -39,7 +40,8 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
   const extractResumeData = useCallback(() => {
     // Use extracted data if provided, otherwise fall back to analysis-based extraction
-    if (extractedData) {
+    if (extractedData && !hasInitializedRef.current) {
+      hasInitializedRef.current = true
       console.log('SmartResumeForm received extractedData:', extractedData)
       console.log('Summary from extractedData:', extractedData.summary)
       // Ensure summary is always a string
@@ -95,6 +97,11 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
     // Set the extracted data
     setFormData(dataToUse)
   }, [atsAnalysis, extractedData])
+
+  // Reset initialization ref when extractedData changes
+  useEffect(() => {
+    hasInitializedRef.current = false
+  }, [extractedData])
 
   // Handle forceShow prop to reset form visibility
   useEffect(() => {
@@ -239,13 +246,17 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
   // Update parent component when form data changes
   useEffect(() => {
-    if (onFormUpdate && formData && !isUpdatingRef.current) {
+    if (onFormUpdate && formData) {
+      // Only prevent rapid updates, not the initial one
+      if (isUpdatingRef.current) {
+        return
+      }
       isUpdatingRef.current = true
       onFormUpdate(formData)
       // Reset the flag after a short delay
       setTimeout(() => {
         isUpdatingRef.current = false
-      }, 100)
+      }, 200)
     }
   }, [formData, onFormUpdate])
 
