@@ -901,10 +901,12 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       const parsedData = parseResumeText(text)
 
       if (parsedData) {
+        console.log('ResumeUpload: Parsed data from text:', parsedData)
         const analysis = performATSAnalysis(text)
         const atsScoreResult = calculateATSScore(parsedData)
 
         // Batch state updates to prevent multiple re-renders
+        console.log('ResumeUpload: Setting state with parsed data')
         setAtsAnalysis(analysis)
         setAtsScore(atsScoreResult)
         setExtractedResumeData(parsedData)
@@ -1779,6 +1781,22 @@ CERTIFICATIONS
           </div>
         )
       }
+
+      {/* Debug Info */}
+      <div className="mt-4 p-4 bg-gray-100 rounded">
+        <h3 className="font-bold">Debug Info:</h3>
+        <p>showSmartForm: {showSmartForm.toString()}</p>
+        <p>extractedResumeData: {extractedResumeData ? 'Yes' : 'No'}</p>
+        <p>improvedResumeData: {improvedResumeData ? 'Yes' : 'No'}</p>
+        <p>atsAnalysis: {atsAnalysis ? 'Yes' : 'No'}</p>
+        <p>Should show form: {(showSmartForm && (extractedResumeData || improvedResumeData)).toString()}</p>
+        {extractedResumeData && (
+          <div>
+            <p>Extracted data keys: {Object.keys(extractedResumeData).join(', ')}</p>
+            <p>Contact name: {extractedResumeData.contactInfo?.name || 'None'}</p>
+          </div>
+        )}
+      </div>
 
       {/* Smart Resume Form */}
       {
