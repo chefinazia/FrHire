@@ -897,13 +897,20 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const analyzeResumeFromText = useCallback(async (text) => {
     try {
-      console.log('Analyzing resume text with new parser, length:', text.length)
+      console.log('=== ANALYZING RESUME TEXT ===')
+      console.log('Text length:', text.length)
+      console.log('Text preview:', text.substring(0, 300) + '...')
       
       // Parse the text using our enhanced parser
       const parsedData = parseResumeText(text)
+      console.log('Parsed data result:', parsedData)
 
       if (parsedData) {
         console.log('ResumeUpload: Parsed data from text:', parsedData)
+        console.log('Contact info:', parsedData.contactInfo)
+        console.log('Skills:', parsedData.skills)
+        console.log('Summary:', parsedData.summary)
+        
         const analysis = performATSAnalysis(text)
         const atsScoreResult = calculateATSScore(parsedData)
 
@@ -952,18 +959,29 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       // Try to extract text from file
       if (file.type === 'application/pdf') {
         try {
-          console.log('Parsing PDF file with pdf-parse:', file.name)
+          console.log('=== PDF PARSING START ===')
+          console.log('File name:', file.name)
+          console.log('File size:', file.size, 'bytes')
+          console.log('File type:', file.type)
+          
           extractedText = await parsePDFText(file)
-          console.log('PDF text extracted successfully, length:', extractedText.length)
+          console.log('PDF text extracted successfully!')
+          console.log('Text length:', extractedText.length)
+          console.log('Text preview:', extractedText.substring(0, 200) + '...')
+          console.log('=== PDF PARSING END ===')
         } catch (pdfError) {
           console.error('PDF parsing error:', pdfError)
+          console.log('Falling back to mock data...')
           extractedText = null;
         }
       } else {
         // For non-PDF files, try to read as text
         try {
+          console.log('Reading non-PDF file as text:', file.name)
           extractedText = await file.text();
+          console.log('Text file read successfully, length:', extractedText.length)
         } catch (textError) {
+          console.error('Text file reading error:', textError)
           extractedText = null;
         }
       }
