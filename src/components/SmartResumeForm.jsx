@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react'
+import { useState, useEffect, useCallback, memo, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpdate, extractedData, forceShow = false }) => {

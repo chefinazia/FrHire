@@ -104,7 +104,7 @@ export const parseResumeText = (text) => {
             const trimmedLine = line.trim();
             if (trimmedLine.length > 0 &&
               trimmedLine.length < 50 &&
-              /^[A-Za-z\s\.]+$/.test(trimmedLine) &&
+              /^[A-Za-z\s.]+$/.test(trimmedLine) &&
               !sectionHeaders.some(header => trimmedLine.toUpperCase().includes(header)) &&
               !trimmedLine.includes('|') && // Not a job title line
               !trimmedLine.includes('@') && // Not an email line

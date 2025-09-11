@@ -36,7 +36,7 @@ export const parsePDFText = async (file) => {
             if (text.length > 1 &&
               /[a-zA-Z]/.test(text) &&
               !text.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
-              !text.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
+              !text.match(/^[0-9\s.\-()]+$/) && // Not just numbers and symbols
               text.length < 100) { // Not too long (likely metadata)
               extractedText += text + ' '
             }
@@ -67,7 +67,7 @@ export const parsePDFText = async (file) => {
           // Filter out PDF metadata from matches
           const filteredMatches = matches.filter(match =>
             !match.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
-            !match.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
+            !match.match(/^[0-9\s.\-()]+$/) && // Not just numbers and symbols
             match.length < 100 // Not too long
           )
           if (filteredMatches.length > 0) {
@@ -136,7 +136,6 @@ export const parseResumeText = (resumeText) => {
     }
 
     const text = resumeText.trim()
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0)
 
     // Extract contact information
     const contactInfo = extractContactInfo(text)
@@ -283,7 +282,6 @@ const extractExperience = (text) => {
   // Look for experience section - more flexible detection
   let inExperienceSection = false
   let currentExp = null
-  let experienceFound = false
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].toLowerCase()
