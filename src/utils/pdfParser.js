@@ -291,8 +291,9 @@ const extractExperience = (text) => {
 
     // Check if we're entering experience section - more patterns
     if (line.includes('experience') || line.includes('employment') || line.includes('work history') ||
-      line.includes('professional experience') || line.includes('work experience') ||
-      line.includes('career') || line.includes('employment history')) {
+        line.includes('professional experience') || line.includes('work experience') ||
+        line.includes('career') || line.includes('employment history') ||
+        line.includes('work') || line.includes('employment') || line.includes('professional')) {
       inExperienceSection = true
       console.log('Found experience section at line', i, ':', originalLine)
       continue
@@ -311,8 +312,10 @@ const extractExperience = (text) => {
       const jobTitlePatterns = [
         'developer', 'engineer', 'manager', 'analyst', 'specialist', 'coordinator',
         'director', 'lead', 'senior', 'junior', 'intern', 'consultant', 'architect',
-        'designer', 'programmer', 'coder', 'developer', 'scientist', 'researcher',
-        'administrator', 'supervisor', 'executive', 'officer', 'representative'
+        'designer', 'programmer', 'coder', 'scientist', 'researcher',
+        'administrator', 'supervisor', 'executive', 'officer', 'representative',
+        'software', 'web', 'frontend', 'backend', 'full stack', 'mobile', 'ios', 'android',
+        'data', 'machine learning', 'ai', 'devops', 'cloud', 'security', 'qa', 'test'
       ]
 
       const isJobTitle = jobTitlePatterns.some(pattern => line.includes(pattern)) &&
@@ -420,7 +423,9 @@ const extractEducation = (text) => {
 
     // Check if we're entering education section - more patterns
     if (line.includes('education') || line.includes('academic') || line.includes('educational') ||
-      line.includes('degree') || line.includes('university') || line.includes('college')) {
+        line.includes('degree') || line.includes('university') || line.includes('college') ||
+        line.includes('bachelor') || line.includes('master') || line.includes('phd') ||
+        line.includes('diploma') || line.includes('certificate') || line.includes('school')) {
       inEducationSection = true
       console.log('Found education section at line', i, ':', originalLine)
       continue
@@ -439,7 +444,9 @@ const extractEducation = (text) => {
       const degreePatterns = [
         'bachelor', 'master', 'phd', 'ph.d', 'doctorate', 'degree', 'diploma',
         'certificate', 'associate', 'b.s', 'b.a', 'm.s', 'm.a', 'mba', 'msc',
-        'bsc', 'ba', 'ma', 'bs', 'ms', 'phd', 'dphil'
+        'bsc', 'ba', 'ma', 'bs', 'ms', 'dphil', 'bachelor of', 'master of',
+        'computer science', 'engineering', 'mathematics', 'physics', 'chemistry',
+        'business', 'economics', 'psychology', 'biology', 'medicine'
       ]
 
       const isDegree = degreePatterns.some(pattern => line.includes(pattern)) &&
