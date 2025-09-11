@@ -39,7 +39,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
   const extractResumeData = useCallback(() => {
     console.log('extractResumeData called:', { extractedData: !!extractedData })
-    
+
     // Use extracted data if provided, otherwise fall back to analysis-based extraction
     if (extractedData) {
       console.log('SmartResumeForm received extractedData:', extractedData)
@@ -116,9 +116,18 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   // Ensure form is visible when we have data
   useEffect(() => {
     if (formData && (formData.contactInfo?.name || formData.summary || formData.skills?.length > 0)) {
+      console.log('Setting form visible due to formData:', formData)
       setIsFormVisible(true)
     }
   }, [formData])
+
+  // Force show form when we have extractedData or atsAnalysis
+  useEffect(() => {
+    if (extractedData || atsAnalysis) {
+      console.log('Force showing form due to data availability:', { extractedData: !!extractedData, atsAnalysis: !!atsAnalysis })
+      setIsFormVisible(true)
+    }
+  }, [extractedData, atsAnalysis])
 
   // Handle forceShow prop to reset form visibility
   useEffect(() => {
@@ -414,12 +423,37 @@ ${Array.isArray(formData.certifications) ? formData.certifications.map(cert =>
         <p className="text-yellow-700 mb-4">
           Has atsAnalysis: {atsAnalysis ? 'Yes' : 'No'}
         </p>
-        <button
-          onClick={() => setIsFormVisible(true)}
-          className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
-        >
-          Force Show Form
-        </button>
+        <p className="text-yellow-700 mb-4">
+          FormData keys: {Object.keys(formData).join(', ')}
+        </p>
+        <p className="text-yellow-700 mb-4">
+          Contact name: {formData.contactInfo?.name || 'None'}
+        </p>
+        <div className="space-y-2">
+          <button 
+            onClick={() => setIsFormVisible(true)}
+            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 mr-2"
+          >
+            Force Show Form
+          </button>
+          <button 
+            onClick={() => {
+              setFormData({
+                contactInfo: { name: 'Test User', email: 'test@example.com', phone: '123-456-7890', location: 'Test City' },
+                summary: 'Test summary',
+                skills: ['JavaScript', 'React', 'Node.js'],
+                experience: [{ title: 'Developer', company: 'Test Corp', duration: '2020-2024', description: 'Test description' }],
+                education: [{ degree: 'BS Computer Science', institution: 'Test University', year: '2020' }],
+                projects: [],
+                certifications: []
+              })
+              setIsFormVisible(true)
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Load Test Data & Show Form
+          </button>
+        </div>
       </div>
     )
   }
