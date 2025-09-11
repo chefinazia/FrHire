@@ -291,9 +291,9 @@ const extractExperience = (text) => {
 
     // Check if we're entering experience section - more patterns
     if (line.includes('experience') || line.includes('employment') || line.includes('work history') ||
-        line.includes('professional experience') || line.includes('work experience') ||
-        line.includes('career') || line.includes('employment history') ||
-        line.includes('work') || line.includes('employment') || line.includes('professional')) {
+      line.includes('professional experience') || line.includes('work experience') ||
+      line.includes('career') || line.includes('employment history') ||
+      line.includes('work') || line.includes('employment') || line.includes('professional')) {
       inExperienceSection = true
       console.log('Found experience section at line', i, ':', originalLine)
       continue
@@ -423,9 +423,9 @@ const extractEducation = (text) => {
 
     // Check if we're entering education section - more patterns
     if (line.includes('education') || line.includes('academic') || line.includes('educational') ||
-        line.includes('degree') || line.includes('university') || line.includes('college') ||
-        line.includes('bachelor') || line.includes('master') || line.includes('phd') ||
-        line.includes('diploma') || line.includes('certificate') || line.includes('school')) {
+      line.includes('degree') || line.includes('university') || line.includes('college') ||
+      line.includes('bachelor') || line.includes('master') || line.includes('phd') ||
+      line.includes('diploma') || line.includes('certificate') || line.includes('school')) {
       inEducationSection = true
       console.log('Found education section at line', i, ':', originalLine)
       continue

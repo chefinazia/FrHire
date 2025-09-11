@@ -596,19 +596,28 @@ export const parseResumeText = (text) => {
 // Create PDF using pdf-lib (browser-compatible)
 export const createResumePDF = async (formData) => {
   try {
+    console.log('createResumePDF called with:', formData)
+
     // Create a new PDF document
+    console.log('Creating PDF document...')
     const pdfDoc = await PDFDocument.create();
+    console.log('PDF document created')
+
     let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
     const { width, height } = page.getSize();
+    console.log('Page created with size:', width, height)
 
     // Load fonts
+    console.log('Loading fonts...')
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    console.log('Fonts loaded successfully')
 
     let yPosition = height - 50;
     const margin = 50;
     const lineHeight = 14;
     const sectionSpacing = 20;
+    console.log('Starting PDF generation with yPosition:', yPosition)
 
     // Helper function to add text
     const addText = (text, x, y, fontSize = 12, font = helvetica, color = rgb(0, 0, 0)) => {
@@ -670,7 +679,7 @@ export const createResumePDF = async (formData) => {
     const addSectionHeader = (title) => {
       checkPageBreak(80); // Ensure enough space for section header and content
       yPosition -= sectionSpacing;
-      addText(title, margin, yPosition, 16, helveticaBold, rgb(0.15, 0.39, 0.44));
+      addText(title, margin, yPosition, 14, helveticaBold, rgb(0.15, 0.39, 0.44));
       yPosition -= lineHeight;
     };
 
@@ -687,7 +696,7 @@ export const createResumePDF = async (formData) => {
 
     // Contact Information
     if (formData.contactInfo?.name) {
-      addText(formData.contactInfo.name, margin, yPosition, 20, helveticaBold, rgb(0.12, 0.16, 0.22));
+      addText(formData.contactInfo.name, margin, yPosition, 18, helveticaBold, rgb(0.12, 0.16, 0.22));
       yPosition -= 30;
     }
 
@@ -719,14 +728,14 @@ export const createResumePDF = async (formData) => {
     // Professional Summary
     if (formData.summary) {
       addSectionHeader('PROFESSIONAL SUMMARY');
-      yPosition = addWrappedText(formData.summary, margin, yPosition, width - 2 * margin, 11, helvetica);
+      yPosition = addWrappedText(formData.summary, margin, yPosition, width - 2 * margin, 12, helvetica);
       addLine();
     }
 
     // Technical Skills
     if (formData.skills && formData.skills.length > 0) {
       addSectionHeader('TECHNICAL SKILLS');
-      yPosition = addWrappedText(formData.skills.join(' • '), margin, yPosition, width - 2 * margin, 11, helvetica);
+      yPosition = addWrappedText(formData.skills.join(' • '), margin, yPosition, width - 2 * margin, 12, helvetica);
       addLine();
     }
 
@@ -746,7 +755,7 @@ export const createResumePDF = async (formData) => {
           }
 
           if (job.description) {
-            yPosition = addWrappedText(job.description, margin, yPosition, width - 2 * margin, 10, helvetica);
+            yPosition = addWrappedText(job.description, margin, yPosition, width - 2 * margin, 12, helvetica);
           }
           yPosition -= 10;
         }
@@ -761,7 +770,7 @@ export const createResumePDF = async (formData) => {
       formData.education.forEach(edu => {
         if (edu.degree && edu.institution) {
           checkPageBreak(50); // Ensure space for education entry
-          addText(`${edu.degree} | ${edu.institution}`, margin, yPosition, 11, helvetica);
+          addText(`${edu.degree} | ${edu.institution}`, margin, yPosition, 12, helvetica);
           yPosition -= lineHeight;
 
           if (edu.year) {
@@ -784,7 +793,7 @@ export const createResumePDF = async (formData) => {
           yPosition -= lineHeight;
 
           if (project.description) {
-            yPosition = addWrappedText(project.description, margin, yPosition, width - 2 * margin, 10, helvetica);
+            yPosition = addWrappedText(project.description, margin, yPosition, width - 2 * margin, 12, helvetica);
           }
 
           if (project.technologies) {
@@ -804,7 +813,7 @@ export const createResumePDF = async (formData) => {
       formData.certifications.forEach(cert => {
         if (cert.name) {
           checkPageBreak(50); // Ensure space for certification entry
-          addText(cert.name, margin, yPosition, 11, helvetica);
+          addText(cert.name, margin, yPosition, 12, helvetica);
           yPosition -= lineHeight;
 
           if (cert.issuer) {
@@ -821,8 +830,10 @@ export const createResumePDF = async (formData) => {
     }
 
     // Convert to blob
+    console.log('Converting PDF to blob...')
     const pdfBytes = await pdfDoc.save();
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    console.log('PDF blob created successfully, size:', blob.size, 'type:', blob.type)
     return blob;
 
   } catch (error) {
