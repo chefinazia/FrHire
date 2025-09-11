@@ -39,9 +39,10 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   }, [atsAnalysis])
 
   const extractResumeData = useCallback(() => {
+    console.log('extractResumeData called:', { extractedData: !!extractedData, hasInitialized: hasInitializedRef.current })
+    
     // Use extracted data if provided, otherwise fall back to analysis-based extraction
-    if (extractedData && !hasInitializedRef.current) {
-      hasInitializedRef.current = true
+    if (extractedData) {
       console.log('SmartResumeForm received extractedData:', extractedData)
       console.log('Summary from extractedData:', extractedData.summary)
       // Ensure summary is always a string
@@ -55,8 +56,10 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
         certifications: Array.isArray(extractedData.certifications) ? extractedData.certifications : [],
         contactInfo: extractedData.contactInfo || { name: '', email: '', phone: '', location: '' }
       }
+      console.log('Setting form data:', safeData)
       setFormData(safeData)
       setIsFormVisible(true) // Show form when data is extracted
+      hasInitializedRef.current = true
       return
     }
 
@@ -104,6 +107,16 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   useEffect(() => {
     hasInitializedRef.current = false
   }, [extractedData])
+
+  // Call analysis and extraction when data is available
+  useEffect(() => {
+    console.log('useEffect triggered:', { atsAnalysis: !!atsAnalysis, extractedData: !!extractedData })
+    if (atsAnalysis) {
+      console.log('Calling analyzeNeedsImprovement and extractResumeData')
+      analyzeNeedsImprovement()
+      extractResumeData()
+    }
+  }, [atsAnalysis, extractedData, analyzeNeedsImprovement, extractResumeData])
 
   // Ensure form is visible when we have data
   useEffect(() => {
@@ -381,14 +394,37 @@ ${Array.isArray(formData.certifications) ? formData.certifications.map(cert =>
     }
   }
 
+  // Debug logging
+  console.log('SmartResumeForm Debug:', {
+    isFormVisible,
+    hasExtractedData: !!extractedData,
+    hasAtsAnalysis: !!atsAnalysis,
+    formDataKeys: Object.keys(formData),
+    contactInfo: formData.contactInfo,
+    summary: formData.summary,
+    skills: formData.skills
+  })
+
   if (!isFormVisible) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <div className="text-green-600 text-6xl mb-4">🎉</div>
-        <h3 className="text-xl font-bold text-green-800 mb-2">Excellent ATS Optimization!</h3>
-        <p className="text-green-700">
-          Your resume is already well-optimized for ATS systems. No improvements needed!
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <div className="text-yellow-600 text-6xl mb-4">⚠️</div>
+        <h3 className="text-xl font-bold text-yellow-800 mb-2">Form Not Visible</h3>
+        <p className="text-yellow-700 mb-4">
+          Debug: isFormVisible = {isFormVisible.toString()}
         </p>
+        <p className="text-yellow-700 mb-4">
+          Has extractedData: {extractedData ? 'Yes' : 'No'}
+        </p>
+        <p className="text-yellow-700 mb-4">
+          Has atsAnalysis: {atsAnalysis ? 'Yes' : 'No'}
+        </p>
+        <button 
+          onClick={() => setIsFormVisible(true)}
+          className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+        >
+          Force Show Form
+        </button>
       </div>
     )
   }
