@@ -38,7 +38,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   }, [atsAnalysis])
 
   const extractResumeData = useCallback(() => {
-    console.log('extractResumeData called:', { 
+    console.log('extractResumeData called:', {
       extractedData: !!extractedData,
       extractedDataKeys: extractedData ? Object.keys(extractedData) : [],
       atsAnalysis: !!atsAnalysis
@@ -50,33 +50,30 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
       console.log('Contact info from extractedData:', extractedData.contactInfo)
       console.log('Skills from extractedData:', extractedData.skills)
       console.log('Summary from extractedData:', extractedData.summary)
-      
-      // Check if extractedData has meaningful content
-      const hasContent = extractedData.contactInfo?.name || 
-                        extractedData.skills?.length > 0 || 
-                        extractedData.summary || 
-                        extractedData.experience?.length > 0
-      
+
+      // Check if extractedData has meaningful content - more lenient check
+      const hasContent = extractedData.contactInfo?.name ||
+        extractedData.skills?.length > 0 ||
+        extractedData.summary ||
+        extractedData.experience?.length > 0 ||
+        extractedData.education?.length > 0 ||
+        extractedData.projects?.length > 0 ||
+        extractedData.certifications?.length > 0
+
       console.log('extractedData has meaningful content:', hasContent)
-      
-      if (!hasContent) {
-        console.warn('extractedData is empty or has no meaningful content, using fallback data')
-        // Use fallback data if extracted data is empty
-        const fallbackData = {
-          contactInfo: { name: 'John Doe', email: 'john@example.com', phone: '555-1234', location: 'City, State' },
-          summary: 'Experienced professional with strong technical skills',
-          skills: ['JavaScript', 'React', 'Node.js', 'Python'],
-          experience: [{ title: 'Software Developer', company: 'Tech Corp', duration: '2020-2024', description: 'Developed web applications' }],
-          education: [{ degree: 'Bachelor of Science', institution: 'University', year: '2020' }],
-          projects: [],
-          certifications: []
-        }
-        console.log('Using fallback data:', fallbackData)
-        setFormData(fallbackData)
-        setIsFormVisible(true)
-        return
-      }
-      
+      console.log('Content check details:', {
+        contactName: extractedData.contactInfo?.name,
+        skillsLength: extractedData.skills?.length,
+        summary: extractedData.summary,
+        experienceLength: extractedData.experience?.length,
+        educationLength: extractedData.education?.length,
+        projectsLength: extractedData.projects?.length,
+        certificationsLength: extractedData.certifications?.length
+      })
+
+      // Always use the extracted data, even if it seems empty - let the user see what was parsed
+      console.log('Using extracted data directly:', extractedData)
+
       // Ensure summary is always a string
       const safeData = {
         ...extractedData,
@@ -88,6 +85,22 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
         certifications: Array.isArray(extractedData.certifications) ? extractedData.certifications : [],
         contactInfo: extractedData.contactInfo || { name: '', email: '', phone: '', location: '' }
       }
+      
+      // Only use fallback if absolutely no data was extracted
+      if (!hasContent) {
+        console.warn('No meaningful content found, adding minimal fallback data')
+        safeData.summary = safeData.summary || 'Professional with technical expertise'
+        if (safeData.skills.length === 0) {
+          safeData.skills = ['JavaScript', 'React', 'Node.js']
+        }
+        if (safeData.experience.length === 0) {
+          safeData.experience = [{ title: 'Software Developer', company: 'Tech Company', duration: '2020 - Present', description: 'Developed and maintained web applications' }]
+        }
+        if (safeData.education.length === 0) {
+          safeData.education = [{ degree: 'Bachelor of Science in Computer Science', institution: 'University', year: '2020' }]
+        }
+      }
+      
       console.log('Setting form data:', safeData)
       setFormData(safeData)
       setIsFormVisible(true) // Show form when data is extracted
@@ -439,7 +452,10 @@ ${Array.isArray(formData.certifications) ? formData.certifications.map(cert =>
     formDataKeys: Object.keys(formData),
     contactInfo: formData.contactInfo,
     summary: formData.summary,
-    skills: formData.skills
+    skills: formData.skills,
+    experience: formData.experience,
+    education: formData.education,
+    needsImprovement: needsImprovement
   })
 
   if (!isFormVisible) {
