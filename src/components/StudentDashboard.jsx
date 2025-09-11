@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useApplications } from '../context/ApplicationContext'
 import { useNotifications } from '../context/NotificationContext'
 import NotificationBell from './NotificationBell'
 import ResumeUpload from './ResumeUpload'
-import ResumeBuilder from './ResumeBuilder'
 
 const StudentDashboard = () => {
   const navigate = useNavigate()
@@ -185,7 +184,7 @@ const StudentDashboard = () => {
               <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm animate-pulse">
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-[150px] h-[300px] text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -260,7 +259,7 @@ const StudentDashboard = () => {
             {applications.length === 0 ? (
               <div className="text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-[150px] h-[300px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
@@ -293,7 +292,7 @@ const StudentDashboard = () => {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <svg
                                     key={star}
-                                    className={`w-4 h-4 ${star <= app.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                    className={`w-[150px] h-[300px] ${star <= app.rating ? 'text-yellow-400' : 'text-gray-300'}`}
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                   >
@@ -354,12 +353,6 @@ const StudentDashboard = () => {
               onResumeAnalyzed={handleResumeAnalyzed}
               onCoinsUpdate={handleCoinsUpdate}
             />
-            {/* Resume Builder */}
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🧩 Build an ATS-Friendly Resume</h3>
-              <p className="text-sm text-gray-600 mb-4">Use the builder below to craft a structured, ATS-friendly resume and export it to PDF.</p>
-              <ResumeBuilder />
-            </div>
             {/* Resume Statistics */}
             {resumeData && atsAnalysis && (
               <div className="bg-white rounded-lg shadow-sm border p-6">

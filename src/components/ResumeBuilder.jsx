@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, useCallback, memo } from 'react'
 import PropTypes from 'prop-types'
 import { useAuth } from '../context/AuthContext'
 
@@ -40,24 +40,24 @@ const ResumeBuilder = ({ onExported }) => {
   const previewRef = useRef(null)
   const [isExporting, setIsExporting] = useState(false)
 
-  const handleChange = (field, value) => {
+  const handleChange = useCallback((field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
-  }
+  }, [])
 
-  const handleArrayChange = (section, idx, field, value) => {
+  const handleArrayChange = useCallback((section, idx, field, value) => {
     setForm(prev => ({
       ...prev,
       [section]: prev[section].map((item, i) => i === idx ? { ...item, [field]: value } : item)
     }))
-  }
+  }, [])
 
-  const addItem = (section, template) => {
+  const addItem = useCallback((section, template) => {
     setForm(prev => ({ ...prev, [section]: [...prev[section], template] }))
-  }
+  }, [])
 
-  const removeItem = (section, idx) => {
+  const removeItem = useCallback((section, idx) => {
     setForm(prev => ({ ...prev, [section]: prev[section].filter((_, i) => i !== idx) }))
-  }
+  }, [])
 
   // Simple ATS guidance
   const atsHints = useMemo(() => {
@@ -98,51 +98,211 @@ const ResumeBuilder = ({ onExported }) => {
     return { found, missing, score, rating, color, recommendations }
   }, [form])
 
-  const exportToPdf = async () => {
+  const exportToPdf = useCallback(async () => {
     setIsExporting(true)
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf')
-      ])
+      // Try image-based PDF generation first
+      try {
+        const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+          import('html2canvas'),
+          import('jspdf')
+        ])
 
-      const node = previewRef.current
-      const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'pt', 'a4')
+        const node = previewRef.current
+        const canvas = await html2canvas(node, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          allowTaint: true,
+          logging: false
+        })
 
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      // Fit to page width and slice across multiple pages if needed
-      const imgWidth = pageWidth
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-      let heightLeft = imgHeight
-      let position = 0
+        const imgData = canvas.toDataURL('image/png', 1.0)
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
+        // Create PDF with proper configuration
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'pt',
+          format: 'a4',
+          compress: true
+        })
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight
-        pdf.addPage()
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
+        const pageWidth = pdf.internal.pageSize.getWidth()
+        const pageHeight = pdf.internal.pageSize.getHeight()
+        const margin = 20
+
+        // Calculate dimensions with margins
+        const imgWidth = pageWidth - (margin * 2)
+        const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+        let heightLeft = imgHeight
+        let position = margin
+
+        // Add image to first page
+        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight, undefined, 'FAST')
+        heightLeft -= (pageHeight - margin * 2)
+
+        // Add additional pages if needed
+        while (heightLeft > 0) {
+          pdf.addPage()
+          position = heightLeft - imgHeight + margin
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight, undefined, 'FAST')
+          heightLeft -= (pageHeight - margin * 2)
+        }
+
+        // Generate filename and save
+        const filename = `${(form.fullName || 'resume').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+        pdf.save(filename)
+
+        if (onExported) onExported()
+        return
+      } catch (imageError) {
+        console.warn('Image-based PDF generation failed, trying text-based approach:', imageError)
+
+        // Fallback to text-based PDF generation
+        const { jsPDF } = await import('jspdf')
+
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'pt',
+          format: 'a4',
+          compress: true
+        })
+
+        const pageWidth = pdf.internal.pageSize.getWidth()
+        const pageHeight = pdf.internal.pageSize.getHeight()
+        const margin = 40
+        let yPosition = margin
+
+        // Helper function to add text with word wrapping
+        const addText = (text, fontSize = 12, isBold = false, color = '#000000') => {
+          if (!text) return yPosition
+
+          pdf.setFontSize(fontSize)
+          pdf.setFont('helvetica', isBold ? 'bold' : 'normal')
+          pdf.setTextColor(color)
+
+          const maxWidth = pageWidth - (margin * 2)
+          const lines = pdf.splitTextToSize(text, maxWidth)
+
+          for (const line of lines) {
+            if (yPosition > pageHeight - margin) {
+              pdf.addPage()
+              yPosition = margin
+            }
+            pdf.text(line, margin, yPosition)
+            yPosition += fontSize * 1.2
+          }
+
+          return yPosition
+        }
+
+        // Header
+        yPosition = addText(form.fullName || 'Your Name', 20, true)
+        yPosition += 10
+
+        // Contact info
+        const contactInfo = []
+        if (form.email) contactInfo.push(form.email)
+        if (form.phone) contactInfo.push(form.phone)
+        if (form.location) contactInfo.push(form.location)
+        if (contactInfo.length > 0) {
+          yPosition = addText(contactInfo.join(' • '), 10)
+        }
+
+        // Links
+        const links = []
+        if (form.linkedin) links.push(`LinkedIn: ${form.linkedin}`)
+        if (form.github) links.push(`GitHub: ${form.github}`)
+        if (form.portfolio) links.push(`Portfolio: ${form.portfolio}`)
+        if (links.length > 0) {
+          yPosition = addText(links.join(' • '), 10)
+        }
+
+        yPosition += 20
+
+        // Summary
+        if (form.summary) {
+          yPosition = addText('PROFESSIONAL SUMMARY', 12, true)
+          yPosition = addText(form.summary, 10)
+          yPosition += 10
+        }
+
+        // Skills
+        if (form.skills) {
+          yPosition = addText('CORE SKILLS', 12, true)
+          yPosition = addText(form.skills, 10)
+          yPosition += 10
+        }
+
+        // Experience
+        if (form.experience.some(e => e.company || e.role)) {
+          yPosition = addText('WORK EXPERIENCE', 12, true)
+          form.experience.forEach(exp => {
+            if (exp.company || exp.role) {
+              const title = `${exp.role || 'Position'} at ${exp.company || 'Company'}`
+              const dates = `${exp.start || ''} - ${exp.end || ''}`
+              yPosition = addText(title, 11, true)
+              yPosition = addText(dates, 10, false, '#666666')
+              if (exp.bullets) {
+                const bullets = exp.bullets.split('\n').filter(b => b.trim())
+                bullets.forEach(bullet => {
+                  yPosition = addText(`• ${bullet.trim()}`, 10)
+                })
+              }
+              yPosition += 10
+            }
+          })
+        }
+
+        // Projects
+        if (form.projects.some(p => p.name || p.description)) {
+          yPosition = addText('KEY PROJECTS', 12, true)
+          form.projects.forEach(project => {
+            if (project.name || project.description) {
+              const title = project.name + (project.link ? ` (${project.link})` : '')
+              yPosition = addText(title, 11, true)
+              if (project.description) {
+                yPosition = addText(project.description, 10)
+              }
+              yPosition += 10
+            }
+          })
+        }
+
+        // Education
+        if (form.education.some(e => e.school || e.degree)) {
+          yPosition = addText('EDUCATION', 12, true)
+          form.education.forEach(edu => {
+            if (edu.school || edu.degree) {
+              const title = `${edu.degree || 'Degree'} from ${edu.school || 'School'}`
+              const dates = `${edu.start || ''} - ${edu.end || ''}`
+              yPosition = addText(title, 11, true)
+              yPosition = addText(dates, 10, false, '#666666')
+              yPosition += 10
+            }
+          })
+        }
+
+        // Certifications
+        if (form.certifications) {
+          yPosition = addText('CERTIFICATIONS', 12, true)
+          yPosition = addText(form.certifications, 10)
+        }
+
+        // Save PDF
+        const filename = `${(form.fullName || 'resume').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`
+        pdf.save(filename)
+
+        if (onExported) onExported()
       }
-      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height)
-      const imgWidth = canvas.width * ratio
-      const imgHeight = canvas.height * ratio
-      const x = (pageWidth - imgWidth) / 2
-      const y = 20
-
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight)
-      pdf.save(`${(form.fullName || 'resume').replace(/\s+/g, '_')}.pdf`)
-      if (onExported) onExported()
     } catch (err) {
-      console.warn('Failed to export PDF:', err)
+      console.error('Failed to export PDF:', err)
+      alert('Failed to generate PDF. Please try again or contact support.')
     } finally {
       setIsExporting(false)
     }
-  }
+  }, [form.fullName, onExported])
 
   return (
     <div className="space-y-6">
@@ -158,6 +318,7 @@ const ResumeBuilder = ({ onExported }) => {
             </button>
           </div>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left: Inputs */}
           <div className="space-y-6">
@@ -436,6 +597,6 @@ ResumeBuilder.propTypes = {
   onExported: PropTypes.func
 }
 
-export default ResumeBuilder
+export default memo(ResumeBuilder)
 
 

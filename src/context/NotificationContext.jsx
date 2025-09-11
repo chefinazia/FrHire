@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
+import apiClient from '../api/client.js'
 
 const NotificationContext = createContext()
 
@@ -19,20 +20,27 @@ export const NotificationProvider = ({ children }) => {
   const hasTriedRef = useRef(false)
 
   useEffect(() => {
-    // Load notifications from localStorage on mount
-    const savedNotifications = localStorage.getItem('notifications')
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications))
+    // Load notifications from API on mount
+    const loadNotifications = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData'))
+        if (userData && userData.id) {
+          const dbNotifications = await apiClient.getNotificationsByUserId(userData.id)
+          setNotifications(dbNotifications)
+        }
+      } catch (error) {
+        console.error('Error loading notifications:', error)
+        setNotifications([])
+      }
     }
+
+    loadNotifications()
 
     // Sync across tabs via storage events
     const onStorage = (e) => {
-      if (e.key === 'notifications') {
-        try {
-          setNotifications(JSON.parse(e.newValue) || [])
-        } catch (error) {
-          console.warn('Failed to parse storage event data:', error)
-        }
+      if (e.key === 'userData') {
+        // Reload notifications when user changes
+        loadNotifications()
       }
     }
     window.addEventListener('storage', onStorage)
@@ -117,136 +125,155 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [])
 
-  const addNotification = (notification) => {
-    const newNotification = {
-      id: Date.now(),
-      ...notification,
-      timestamp: new Date().toISOString(),
-      read: false
-    }
-
-    const updatedNotifications = [...notifications, newNotification]
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    // Broadcast to other tabs
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
-    }
-    // Also try server push to target user if toUserId provided
-    if (wsRef.current && notification.toUserId != null) {
-      try {
-        wsRef.current.send(JSON.stringify({ type: 'notify', toUserId: notification.toUserId, notification }))
-      } catch (error) {
-        console.warn('Failed to send WebSocket notification:', error)
+  const addNotification = useCallback(async (notification) => {
+    try {
+      const newNotification = {
+        user_id: notification.userId || notification.toUserId,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        application_id: notification.applicationId || null,
+        status: notification.status || null,
+        rating: notification.rating || null,
+        has_feedback: notification.hasFeedback || false,
+        is_read: false
       }
+
+      const createdNotification = await apiClient.createNotification(newNotification)
+
+      setNotifications(prev => [createdNotification, ...prev])
+
+      // Broadcast to other tabs
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notification: createdNotification })
+      }
+
+      // Also try server push to target user if toUserId provided
+      if (wsRef.current && notification.toUserId != null) {
+        try {
+          wsRef.current.send(JSON.stringify({ type: 'notify', toUserId: notification.toUserId, notification: createdNotification }))
+        } catch (error) {
+          console.warn('Failed to send WebSocket notification:', error)
+        }
+      }
+
+      return createdNotification
+    } catch (error) {
+      console.error('Error adding notification:', error)
+      throw error
     }
+  }, [])
 
-    return newNotification
-  }
-
-  const markAsRead = (notificationId) => {
-    const updatedNotifications = notifications.map(notification =>
-      notification.id === notificationId
-        ? { ...notification, read: true }
-        : notification
-    )
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
+  const markAsRead = useCallback(async (notificationId) => {
+    try {
+      await apiClient.markNotificationAsRead(notificationId)
+      setNotifications(prev => prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, is_read: true }
+          : notification
+      ))
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notification: { id: notificationId, is_read: true } })
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
     }
-  }
+  }, [])
 
-  const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => ({
-      ...notification,
-      read: true
-    }))
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
-    }
-  }
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => {
+      const updatedNotifications = prev.map(notification => ({
+        ...notification,
+        read: true
+      }))
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notifications: updatedNotifications })
+      }
+      return updatedNotifications
+    })
+  }, [])
 
-  const getUnreadCount = () => {
-    return notifications.filter(notification => !notification.read).length
-  }
+  const getUnreadCount = useCallback(() => {
+    return notifications.filter(notification => !notification.is_read).length
+  }, [notifications])
 
-  const getNotificationsByUserId = (userId) => {
+  const getNotificationsByUserId = useCallback((userId) => {
     return notifications.filter(notification => notification.userId === userId)
-  }
+  }, [notifications])
 
-  const value = {
+  const buildNotificationTemplate = useCallback((kind, { application, recruiterName, status, rating, feedback } = {}) => {
+    const jobTitle = application?.jobTitle || 'the position'
+    switch (kind) {
+      case 'review_received': {
+        const safeRating = typeof rating === 'number' ? rating : (application?.rating || 0)
+        return {
+          type: 'review_received',
+          title: `New review from ${recruiterName || 'Recruiter'}`,
+          message: `Your application for ${jobTitle} was reviewed. Rating: ${safeRating}/5.${feedback ? ' Feedback: ' + feedback : ''}`,
+          rating: safeRating,
+          feedback: feedback || application?.feedback || '',
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      case 'status_update': {
+        const s = status || application?.status || 'Updated'
+        let title = 'Application status updated'
+        if (s === 'Interview Scheduled') title = 'Interview scheduled'
+        if (s === 'Accepted') title = 'Congratulations! You were accepted'
+        if (s === 'Rejected') title = 'Application decision: Rejected'
+        if (s === 'Under Review') title = 'Application moved to Under Review'
+        return {
+          type: 'status_update',
+          title,
+          message: `Your application for ${jobTitle} is now: ${s}.`,
+          status: s,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      case 'notes_added': {
+        return {
+          type: 'notes_added',
+          title: 'New note added by recruiter',
+          message: `A new note was added to your application for ${jobTitle}.`,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+      }
+      default:
+        return {
+          type: 'application_update',
+          title: 'Application updated',
+          message: `There is a new update on your application for ${jobTitle}.`,
+          applicationId: application?.id,
+          userId: application?.userId,
+          toUserId: application?.userId
+        }
+    }
+  }, [])
+
+  const notifyForApplication = useCallback((kind, params) => {
+    const n = (typeof kind === 'object' ? kind : null) || ({});
+    const template = n.type ? n : (typeof kind === 'string' ? buildNotificationTemplate(kind, params) : null)
+    if (!template) return null
+    return addNotification(template)
+  }, [buildNotificationTemplate, addNotification])
+
+  const value = useMemo(() => ({
     notifications,
     addNotification,
-    // Template builder for consistent messages
-    buildNotificationTemplate: (kind, { application, recruiterName, status, rating, feedback } = {}) => {
-      const jobTitle = application?.jobTitle || 'the position'
-      switch (kind) {
-        case 'review_received': {
-          const safeRating = typeof rating === 'number' ? rating : (application?.rating || 0)
-          return {
-            type: 'review_received',
-            title: `New review from ${recruiterName || 'Recruiter'}`,
-            message: `Your application for ${jobTitle} was reviewed. Rating: ${safeRating}/5.${feedback ? ' Feedback: ' + feedback : ''}`,
-            rating: safeRating,
-            feedback: feedback || application?.feedback || '',
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        case 'status_update': {
-          const s = status || application?.status || 'Updated'
-          let title = 'Application status updated'
-          if (s === 'Interview Scheduled') title = 'Interview scheduled'
-          if (s === 'Accepted') title = 'Congratulations! You were accepted'
-          if (s === 'Rejected') title = 'Application decision: Rejected'
-          if (s === 'Under Review') title = 'Application moved to Under Review'
-          return {
-            type: 'status_update',
-            title,
-            message: `Your application for ${jobTitle} is now: ${s}.`,
-            status: s,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        case 'notes_added': {
-          return {
-            type: 'notes_added',
-            title: 'New note added by recruiter',
-            message: `A new note was added to your application for ${jobTitle}.`,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-        }
-        default:
-          return {
-            type: 'application_update',
-            title: 'Application updated',
-            message: `There is a new update on your application for ${jobTitle}.`,
-            applicationId: application?.id,
-            userId: application?.userId,
-            toUserId: application?.userId
-          }
-      }
-    },
-    // High-level helper: build + enqueue + push via WS
-    notifyForApplication: (kind, params) => {
-      const n = (typeof kind === 'object' ? kind : null) || ({});
-      const template = n.type ? n : (typeof kind === 'string' ? value.buildNotificationTemplate(kind, params) : null)
-      if (!template) return null
-      return addNotification(template)
-    },
+    buildNotificationTemplate,
+    notifyForApplication,
     markAsRead,
     markAllAsRead,
     getUnreadCount,
     getNotificationsByUserId
-  }
+  }), [notifications, addNotification, buildNotificationTemplate, notifyForApplication, markAsRead, markAllAsRead, getUnreadCount, getNotificationsByUserId])
 
   return (
     <NotificationContext.Provider value={value}>
