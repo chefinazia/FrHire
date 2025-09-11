@@ -33,11 +33,11 @@ export const parsePDFText = async (file) => {
           for (const match of textMatches) {
             const text = match.slice(1, -1) // Remove parentheses
             // Filter out PDF metadata and formatting
-            if (text.length > 1 && 
-                /[a-zA-Z]/.test(text) &&
-                !text.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
-                !text.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
-                text.length < 100) { // Not too long (likely metadata)
+            if (text.length > 1 &&
+              /[a-zA-Z]/.test(text) &&
+              !text.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
+              !text.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
+              text.length < 100) { // Not too long (likely metadata)
               extractedText += text + ' '
             }
           }
@@ -48,7 +48,7 @@ export const parsePDFText = async (file) => {
     // Method 2: Extract readable text patterns
     if (extractedText.length < 100) {
       console.log('Trying alternative text extraction...')
-      
+
       // Look for common text patterns in PDF, filtering out metadata
       const textPatterns = [
         /[A-Za-z][A-Za-z0-9\s,.-]{5,}/g, // Words and sentences (reduced minimum length)
@@ -60,12 +60,12 @@ export const parsePDFText = async (file) => {
         /\b(Software|Engineer|Developer|Manager|Analyst|Designer|Specialist|Coordinator|Director|Lead|Senior|Junior|Intern)\b/gi, // Job titles
         /\b(JavaScript|Python|Java|C\+\+|React|Angular|Vue|Node\.js|HTML|CSS|SQL|MongoDB|MySQL|AWS|Azure|Docker|Git|Linux|Windows|macOS)\b/gi // Tech skills
       ]
-      
+
       for (const pattern of textPatterns) {
         const matches = pdfString.match(pattern)
         if (matches) {
           // Filter out PDF metadata from matches
-          const filteredMatches = matches.filter(match => 
+          const filteredMatches = matches.filter(match =>
             !match.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
             !match.match(/^[0-9\s\.\-\(\)]+$/) && // Not just numbers and symbols
             match.length < 100 // Not too long
@@ -80,22 +80,22 @@ export const parsePDFText = async (file) => {
     // Method 3: Extract all readable ASCII text
     if (extractedText.length < 50) {
       console.log('Using basic ASCII text extraction...')
-      
+
       // Extract all readable ASCII characters
       const readableText = pdfString
         .replace(/[^\x20-\x7E\s]/g, ' ') // Replace non-printable chars
         .replace(/\s+/g, ' ') // Normalize whitespace
         .trim()
-      
+
       // Filter out very short or meaningless text and PDF metadata
-      const words = readableText.split(' ').filter(word => 
-        word.length > 2 && 
-        /[a-zA-Z]/.test(word) && 
+      const words = readableText.split(' ').filter(word =>
+        word.length > 2 &&
+        /[a-zA-Z]/.test(word) &&
         !/^[0-9\s]+$/.test(word) &&
         !word.match(/^(macOS|Parent|Resources|Contents|Length|Helvetica|Bold|Oblique|Courier|Times|Roman|Italic|Width|Height|Col|Font|Size|Color|Matrix|Stream|EndStream|Obj|EndObj|XRef|Trailer|StartXRef|Catalog|Pages|Page|MediaBox|CropBox|BleedBox|TrimBox|ArtBox|Rotate|Group|S|Trans|GS|q|Q|cm|m|l|h|re|f|F|s|S|n|W|W\*|b|B|b\*|B\*|BMC|BDC|EMC|Do|Tf|Td|TD|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk|Td|Tm|Tj|TJ|T\*|Tc|Tw|Tz|TL|Tr|Ts|Tg|Tk)$/i) &&
         word.length < 50 // Not too long
       )
-      
+
       extractedText = words.join(' ')
     }
 
@@ -284,9 +284,18 @@ const extractExperience = (text) => {
     }
 
     if (inExperienceSection) {
-      // Look for job title patterns
-      if (line.includes('developer') || line.includes('engineer') || line.includes('manager') ||
-        line.includes('analyst') || line.includes('specialist') || line.includes('coordinator')) {
+      // Look for job title patterns - more comprehensive
+      const jobTitlePatterns = [
+        'developer', 'engineer', 'manager', 'analyst', 'specialist', 'coordinator',
+        'director', 'lead', 'senior', 'junior', 'intern', 'consultant', 'architect',
+        'designer', 'programmer', 'coder', 'developer', 'scientist', 'researcher',
+        'administrator', 'supervisor', 'executive', 'officer', 'representative'
+      ]
+      
+      const isJobTitle = jobTitlePatterns.some(pattern => line.includes(pattern)) && 
+                        line.length > 5 && line.length < 100
+      
+      if (isJobTitle) {
         if (currentExp) {
           experience.push(currentExp)
         }
@@ -296,12 +305,22 @@ const extractExperience = (text) => {
           duration: '',
           description: ''
         }
-      } else if (currentExp && line.includes('company') || line.includes('inc') || line.includes('corp') || line.includes('ltd')) {
-        currentExp.company = lines[i]
-      } else if (currentExp && /\d{4}/.test(line)) {
-        currentExp.duration = line
-      } else if (currentExp && line.length > 10) {
-        currentExp.description += (currentExp.description ? ' ' : '') + lines[i]
+      } else if (currentExp) {
+        // Check if this line contains company information
+        if (line.includes('inc') || line.includes('corp') || line.includes('ltd') || 
+            line.includes('llc') || line.includes('company') || line.includes('group') ||
+            line.includes('solutions') || line.includes('technologies') || line.includes('systems')) {
+          currentExp.company = lines[i]
+        }
+        // Check if this line contains duration/date information
+        else if (/\d{4}/.test(line) && (line.includes('present') || line.includes('current') || 
+                 line.includes('to') || line.includes('-') || line.includes('until'))) {
+          currentExp.duration = line
+        }
+        // Otherwise, add to description
+        else if (line.length > 10 && !line.match(/^(experience|employment|work|career|professional)$/i)) {
+          currentExp.description += (currentExp.description ? ' ' : '') + lines[i]
+        }
       }
     }
   }
@@ -310,7 +329,9 @@ const extractExperience = (text) => {
     experience.push(currentExp)
   }
 
-  return experience.slice(0, 5) // Limit to 5 experiences
+  const finalExperience = experience.slice(0, 5) // Limit to 5 experiences
+  console.log('Extracted experience:', finalExperience)
+  return finalExperience
 }
 
 /**
@@ -336,8 +357,17 @@ const extractEducation = (text) => {
     }
 
     if (inEducationSection) {
-      if (line.includes('bachelor') || line.includes('master') || line.includes('phd') ||
-        line.includes('degree') || line.includes('university') || line.includes('college')) {
+      // Look for degree patterns
+      const degreePatterns = [
+        'bachelor', 'master', 'phd', 'ph.d', 'doctorate', 'degree', 'diploma',
+        'certificate', 'associate', 'b.s', 'b.a', 'm.s', 'm.a', 'mba', 'msc',
+        'bsc', 'ba', 'ma', 'bs', 'ms', 'phd', 'dphil'
+      ]
+      
+      const isDegree = degreePatterns.some(pattern => line.includes(pattern)) && 
+                      line.length > 5 && line.length < 100
+      
+      if (isDegree) {
         if (currentEdu) {
           education.push(currentEdu)
         }
@@ -346,10 +376,17 @@ const extractEducation = (text) => {
           institution: '',
           year: ''
         }
-      } else if (currentEdu && (line.includes('university') || line.includes('college') || line.includes('institute'))) {
-        currentEdu.institution = lines[i]
-      } else if (currentEdu && /\d{4}/.test(line)) {
-        currentEdu.year = line
+      } else if (currentEdu) {
+        // Check if this line contains institution information
+        if (line.includes('university') || line.includes('college') || line.includes('institute') ||
+            line.includes('school') || line.includes('academy') || line.includes('center')) {
+          currentEdu.institution = lines[i]
+        }
+        // Check if this line contains year information
+        else if (/\d{4}/.test(line) && (line.includes('graduated') || line.includes('completed') || 
+                 line.includes('expected') || line.length < 20)) {
+          currentEdu.year = line
+        }
       }
     }
   }
@@ -358,7 +395,9 @@ const extractEducation = (text) => {
     education.push(currentEdu)
   }
 
-  return education.slice(0, 3) // Limit to 3 education entries
+  const finalEducation = education.slice(0, 3) // Limit to 3 education entries
+  console.log('Extracted education:', finalEducation)
+  return finalEducation
 }
 
 /**
@@ -471,7 +510,9 @@ const extractProjects = (text) => {
     projects.push(currentProject)
   }
 
-  return projects.slice(0, 5) // Limit to 5 projects
+  const finalProjects = projects.slice(0, 5) // Limit to 5 projects
+  console.log('Extracted projects:', finalProjects)
+  return finalProjects
 }
 
 /**
@@ -504,7 +545,9 @@ const extractCertifications = (text) => {
     }
   }
 
-  return certifications.slice(0, 5) // Limit to 5 certifications
+  const finalCertifications = certifications.slice(0, 5) // Limit to 5 certifications
+  console.log('Extracted certifications:', finalCertifications)
+  return finalCertifications
 }
 
 /**
