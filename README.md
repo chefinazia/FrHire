@@ -59,9 +59,11 @@ A comprehensive job application platform built with React that connects students
 - **🆕 PDF Generation**: jsPDF for resume export functionality
 - **🆕 File Processing**: HTML5 File API for resume uploads
 - **🆕 AI Analysis**: Custom ATS scoring algorithms
-- **🆕 Database System**: JSON-based localStorage with CRUD operations
+- **🆕 Backend API**: Express.js server with SQLite database
+- **🆕 Database**: SQLite with better-sqlite3 for data persistence
 - **🆕 PDF Parsing**: pdf-parse library for text extraction
-- **🆕 Data Persistence**: Automatic save/load with user isolation
+- **🆕 Data Persistence**: Server-side database with user isolation
+- **🆕 API Client**: Centralized frontend API client for backend communication
 
 ## 🚀 Quick Start
 
@@ -82,23 +84,22 @@ A comprehensive job application platform built with React that connects students
    npm install
    ```
 
-3. **Install additional dependencies for resume features**
+3. **Start all servers** (run these in separate terminals):
    ```bash
-   npm install jspdf pdf-parse
-   ```
-
-4. **Start the WebSocket server**
-   ```bash
+   # Terminal 1: Start Express API server
+   npm run api
+   
+   # Terminal 2: Start WebSocket server
    npm run ws
-   ```
-
-5. **Start the development server**
-   ```bash
+   
+   # Terminal 3: Start development server
    npm run dev
    ```
 
-6. **Open your browser**
-   - Navigate to `http://localhost:5173`
+4. **Open your browser**
+   - Navigate to `http://localhost:3000` (Vite dev server)
+   - API server runs on `http://localhost:3002`
+   - WebSocket server runs on `ws://localhost:5178`
    - Open a second tab/window to test real-time notifications
 
 ## 🧪 Test Accounts
@@ -109,18 +110,18 @@ A comprehensive job application platform built with React that connects students
 | `john@student.com` | `password` | John Smith | 100 |
 | `jane@student.com` | `password` | Jane Doe | 100 |
 | `mike@student.com` | `password` | Mike Johnson | 100 |
-| `rachitarora1993@gmail.com` | `password` | Rachit Arora | 100 |
+| `rachit@student.com` | `password` | Rachit Arora | 100 |
 
 ### Recruiter Account
 | Email | Password | Role |
 |-------|----------|------|
-| `admin@company.com` | `password` | Recruiter |
+| `recruiter@company.com` | `password` | Recruiter |
 
 ## 📱 How to Test Features
 
 ### Real-time Notifications
 1. **Open two browser windows/tabs**
-2. **Login as recruiter** in one window (`admin@company.com`)
+2. **Login as recruiter** in one window (`recruiter@company.com`)
 3. **Login as student** in another window (e.g., `john@student.com`)
 4. **Test the workflow**:
    - Student applies to a job → Recruiter gets notification
@@ -129,7 +130,7 @@ A comprehensive job application platform built with React that connects students
    - Watch notifications update instantly across tabs!
 
 ### AI Resume Analysis & Smart Builder
-1. **Login as student** (`rachitarora1993@gmail.com`)
+1. **Login as student** (`rachit@student.com`)
 2. **Navigate to "Resume & ATS Analysis" tab**
 3. **Upload a resume file** (PDF supported)
 4. **View ATS analysis results** with scoring and recommendations
@@ -179,13 +180,14 @@ A comprehensive job application platform built with React that connects students
 - **Gamification**: Encourages users to improve their resumes
 
 ### Database System
-- **JSON-based Storage**: Uses localStorage for client-side persistence
-- **User Isolation**: Each user's data is stored separately
+- **SQLite Database**: Server-side database with better-sqlite3
+- **Express.js API**: RESTful API endpoints for all database operations
+- **User Isolation**: Each user's data is stored separately with user ID
 - **CRUD Operations**: Complete Create, Read, Update, Delete functionality
 - **Status Tracking**: Draft vs completed resume states
 - **Auto-save**: Automatic draft saving while editing
 - **Data Recovery**: Resume data persists across browser sessions
-- **Export/Import**: Backup and restore database functionality
+- **API Client**: Centralized frontend client for backend communication
 - **Error Handling**: Robust error handling with user notifications
 
 ## 🏗️ Project Structure
@@ -200,8 +202,8 @@ src/
 │   ├── SmartResumeForm.jsx     # AI-powered resume builder
 │   ├── ResumeBuilder.jsx       # Legacy resume builder
 │   └── ...
-├── utils/               # Utility functions
-│   └── database.js             # Database operations and CRUD functions
+├── api/                 # API client for backend communication
+│   └── client.js               # Centralized API client
 ├── context/             # React Context providers
 │   ├── AuthContext.jsx         # Authentication state
 │   ├── ApplicationContext.jsx  # Application data management
@@ -213,6 +215,11 @@ src/
 ├── login/               # Authentication components
 │   ├── Login.jsx               # Login with coin system
 │   └── Signup.jsx              # User registration
+├── api/                 # Backend API server
+│   └── server.js               # Express.js server with SQLite
+├── database/            # Database configuration
+│   └── database.js             # SQLite database setup and operations
+├── ws-server.cjs        # WebSocket server for real-time notifications
 └── ...
 ```
 
@@ -220,24 +227,34 @@ src/
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
+| `npm run dev` | Start Vite development server (port 3000) |
+| `npm run api` | Start Express API server (port 3002) |
+| `npm run ws` | Start WebSocket server (port 5178) |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint |
-| `npm run ws` | Start WebSocket server |
 
 ## 🔧 Configuration
 
-### WebSocket Server
-The WebSocket server runs on port `5178` by default. You can configure this in:
-- `ws-server.cjs` - Server configuration
-- `NotificationContext.jsx` - Client connection
+### Server Ports
+- **Vite Dev Server**: `http://localhost:3000`
+- **Express API Server**: `http://localhost:3002`
+- **WebSocket Server**: `ws://localhost:5178`
 
-### Environment Variables
-Create a `.env` file for custom configuration:
-```env
-VITE_WS_PORT=5178
+### API Configuration
+The API client is configured in `src/api/client.js`:
+```javascript
+const API_BASE_URL = 'http://localhost:3002/api'
 ```
+
+### WebSocket Configuration
+WebSocket connection is configured in `NotificationContext.jsx`:
+```javascript
+const WS_URL = 'ws://localhost:5178'
+```
+
+### Database Configuration
+SQLite database is configured in `database/database.js` and automatically creates tables on startup.
 
 ## 🎯 User Workflows
 
@@ -306,6 +323,26 @@ Deploy the `dist/` folder to your preferred hosting platform.
 
 - WebSocket connection may take a moment to establish on first load
 - Notifications persist in localStorage (intentional for demo purposes)
+- Resume parsing may require a few seconds for large PDF files
+- Infinite re-rendering issue during resume upload has been fixed ✅
+
+## 🆕 Recent Updates & Fixes
+
+### Latest Improvements (Latest Update)
+- **✅ Fixed Infinite Re-rendering**: Resolved infinite blinking/flashing during resume upload
+- **✅ Backend Architecture**: Migrated from localStorage to Express.js + SQLite database
+- **✅ API Client**: Centralized frontend API client for better data management
+- **✅ Real-time Notifications**: WebSocket server for instant cross-tab notifications
+- **✅ Enhanced Resume Parser**: Improved AI parsing with multiple pattern matching
+- **✅ Auto-save System**: Draft saving while editing, completed saving on submit
+- **✅ Data Persistence**: Resume data automatically saved and restored across sessions
+
+### Technical Fixes
+- **Resume Upload Loop**: Fixed infinite re-rendering caused by useEffect dependencies
+- **Database Migration**: Moved from client-side localStorage to server-side SQLite
+- **WebSocket Stability**: Improved connection handling and auto-reconnection
+- **State Management**: Optimized React state updates to prevent unnecessary re-renders
+- **Error Handling**: Enhanced error handling throughout the application
 
 ## 🔮 Future Enhancements
 
@@ -317,6 +354,9 @@ Deploy the `dist/` folder to your preferred hosting platform.
 - [x] ✅ Database persistence with auto-save
 - [x] ✅ Enhanced AI parser with multiple pattern matching
 - [x] ✅ Resume data recovery and editing
+- [x] ✅ Backend API with Express.js and SQLite
+- [x] ✅ Real-time notifications with WebSocket
+- [x] ✅ Fixed infinite re-rendering issues
 - [ ] Email notifications integration
 - [ ] Advanced search and filtering
 - [ ] Interview scheduling system
