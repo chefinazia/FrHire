@@ -167,31 +167,32 @@ export const NotificationProvider = ({ children }) => {
   const markAsRead = useCallback(async (notificationId) => {
     try {
       await apiClient.markNotificationAsRead(notificationId)
-      const updatedNotifications = notifications.map(notification =>
+      setNotifications(prev => prev.map(notification =>
         notification.id === notificationId
           ? { ...notification, is_read: true }
           : notification
-      )
-      setNotifications(updatedNotifications)
+      ))
       if (channelRef.current) {
         channelRef.current.postMessage({ notification: { id: notificationId, is_read: true } })
       }
     } catch (error) {
       console.error('Error marking notification as read:', error)
     }
-  }, [notifications])
+  }, [])
 
   const markAllAsRead = useCallback(() => {
-    const updatedNotifications = notifications.map(notification => ({
-      ...notification,
-      read: true
-    }))
-    setNotifications(updatedNotifications)
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
-    if (channelRef.current) {
-      channelRef.current.postMessage({ notifications: updatedNotifications })
-    }
-  }, [notifications])
+    setNotifications(prev => {
+      const updatedNotifications = prev.map(notification => ({
+        ...notification,
+        read: true
+      }))
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications))
+      if (channelRef.current) {
+        channelRef.current.postMessage({ notifications: updatedNotifications })
+      }
+      return updatedNotifications
+    })
+  }, [])
 
   const getUnreadCount = useCallback(() => {
     return notifications.filter(notification => !notification.is_read).length

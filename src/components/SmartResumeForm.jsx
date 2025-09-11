@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import PropTypes from 'prop-types'
 
 const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpdate, extractedData, forceShow = false }) => {
@@ -100,7 +100,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
       analyzeNeedsImprovement()
       extractResumeData()
     }
-  }, [atsAnalysis, extractedData, analyzeNeedsImprovement, extractResumeData])
+  }, [atsAnalysis, extractedData])
 
   // Handle forceShow prop to reset form visibility
   useEffect(() => {
@@ -245,7 +245,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
   // Update parent component when form data changes
   useEffect(() => {
-    if (onFormUpdate) {
+    if (onFormUpdate && formData) {
       onFormUpdate(formData)
     }
   }, [formData, onFormUpdate])
@@ -940,4 +940,4 @@ SmartResumeForm.propTypes = {
   forceShow: PropTypes.bool
 }
 
-export default SmartResumeForm
+export default memo(SmartResumeForm)
