@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react'
 import PropTypes from 'prop-types'
 
 const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpdate, extractedData, forceShow = false }) => {
@@ -13,6 +13,7 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
   })
   const [needsImprovement, setNeedsImprovement] = useState({})
   const [isFormVisible, setIsFormVisible] = useState(false)
+  const isUpdatingRef = useRef(false)
   const [validationErrors, setValidationErrors] = useState({})
   const [isExporting, setIsExporting] = useState(false)
 
@@ -93,13 +94,6 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
     // Set the extracted data
     setFormData(dataToUse)
-  }, [atsAnalysis, extractedData])
-
-  useEffect(() => {
-    if (atsAnalysis) {
-      analyzeNeedsImprovement()
-      extractResumeData()
-    }
   }, [atsAnalysis, extractedData])
 
   // Handle forceShow prop to reset form visibility
@@ -245,8 +239,13 @@ const SmartResumeForm = ({ atsAnalysis, atsScore = null, onFormSubmit, onFormUpd
 
   // Update parent component when form data changes
   useEffect(() => {
-    if (onFormUpdate && formData) {
+    if (onFormUpdate && formData && !isUpdatingRef.current) {
+      isUpdatingRef.current = true
       onFormUpdate(formData)
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        isUpdatingRef.current = false
+      }, 100)
     }
   }, [formData, onFormUpdate])
 
