@@ -15,6 +15,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const [isUploading, setIsUploading] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [isAnalyzingInProgress, setIsAnalyzingInProgress] = useState(false)
   const [uploadedResume, setUploadedResume] = useState(null)
   const [atsAnalysis, setAtsAnalysis] = useState(null)
   const [showSmartForm, setShowSmartForm] = useState(false)
@@ -26,7 +27,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const [resumeText, setResumeText] = useState('')
 
   // Load existing resume data for the user
-  const loadExistingResume = useCallback(async () => {
+  const loadExistingResume = async () => {
     if (!user?.id) return
 
     try {
@@ -44,7 +45,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     } catch (error) {
       console.error('Error loading existing resume:', error)
     }
-  }, [user?.id])
+  }
 
   // Initialize database only once
   useEffect(() => {
@@ -217,6 +218,7 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
     setResumeText('')
     setIsUploading(false)
     setIsAnalyzing(false)
+    setIsAnalyzingInProgress(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -343,7 +345,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const extractResumeDataForForm = (resumeText) => {
     // Use resumeText parameter
-    console.log('Extracting data from text length:', resumeText.length)
     // Extract data from Rachit Arora's resume
     return {
       name: 'Rachit Arora',
@@ -872,8 +873,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   const projects = extractProjects(cleanText)
   const certifications = extractCertifications(cleanText)
 
-  console.log('Parsed experience data:', experience)
-
   return {
     contactInfo,
     summary,
@@ -891,8 +890,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
 
   const analyzeResumeFromText = async (text) => {
     try {
-      console.log('Starting resume analysis from text...')
-
       // Parse the text using our enhanced parser
       const parsedData = parseResumeText(text)
 
@@ -932,6 +929,12 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
   }
 
   const analyzeResume = async (file) => {
+    if (isAnalyzingInProgress) {
+      console.log('Analysis already in progress, skipping...')
+      return null
+    }
+    
+    setIsAnalyzingInProgress(true)
     try {
       let extractedText = '';
 
@@ -956,7 +959,6 @@ const ResumeUpload = ({ onResumeAnalyzed, onCoinsUpdate }) => {
       }
 
       if (extractedText) {
-        console.log('Using extracted text for analysis...')
         // Use the extracted text for analysis
         const analysisResult = await analyzeResumeFromText(extractedText)
         return analysisResult
@@ -1076,7 +1078,6 @@ CERTIFICATIONS
       const parsedData = parseResumeText(extractedText)
 
       if (parsedData) {
-        console.log('Successfully parsed resume with PDFKit:', parsedData)
         const analysis = performATSAnalysis(extractedText)
         const atsScoreResult = calculateATSScore(parsedData)
 
@@ -1160,13 +1161,14 @@ CERTIFICATIONS
       }
       setAtsAnalysis(basicAnalysis)
       return basicAnalysis
+    } finally {
+      setIsAnalyzingInProgress(false)
     }
   }
 
   const performATSAnalysis = (resumeText) => {
     // Use resumeText for analysis
     const text = resumeText.toLowerCase()
-    console.log('Analyzing resume text length:', text.length)
     const foundKeywords = {}
     const categoryScores = {}
     const categoryWeights = {
