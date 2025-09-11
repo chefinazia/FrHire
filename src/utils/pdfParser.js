@@ -1,13 +1,5 @@
-import * as pdfjsLib from 'pdfjs-dist'
-
-// Configure PDF.js worker - try multiple sources
-try {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-} catch (error) {
-  console.warn('Failed to set PDF.js worker from CDN, using fallback')
-  // Fallback to local worker if available
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
-}
+// Simple PDF text extraction without external dependencies
+// This approach reads PDF as binary and extracts readable text patterns
 
 /**
  * Parse PDF file and extract text content using PDF.js
@@ -16,70 +8,97 @@ try {
  */
 export const parsePDFText = async (file) => {
   try {
-    console.log('Parsing PDF with pdfjs-dist:', file.name)
+    console.log('Parsing PDF with simple text extraction:', file.name)
     
     // Convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
     
-    // Load PDF document
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    console.log('PDF loaded, pages:', pdf.numPages)
+    // Convert to string for text extraction
+    const decoder = new TextDecoder('utf-8', { fatal: false })
+    const pdfString = decoder.decode(uint8Array)
     
-    let fullText = ''
+    console.log('PDF loaded, size:', arrayBuffer.byteLength, 'bytes')
     
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum)
-      const textContent = await page.getTextContent()
-      
-      // Combine text items
-      const pageText = textContent.items
-        .map(item => item.str)
-        .join(' ')
-      
-      fullText += pageText + '\n'
-      console.log(`Page ${pageNum} text length:`, pageText.length)
-    }
+    // Extract text using regex patterns
+    let extractedText = ''
     
-    console.log('PDF parsed successfully:', {
-      pages: pdf.numPages,
-      textLength: fullText.length
-    })
-    
-    return fullText.trim()
-  } catch (error) {
-    console.error('Error parsing PDF with pdfjs-dist:', error)
-    
-    // Fallback: try to extract basic text using a simple approach
-    try {
-      console.log('Attempting fallback PDF parsing...')
-      const arrayBuffer = await file.arrayBuffer()
-      const uint8Array = new Uint8Array(arrayBuffer)
-      
-      // Simple text extraction - look for readable text patterns
-      let text = ''
-      const decoder = new TextDecoder('utf-8', { fatal: false })
-      
-      // Try to decode chunks of the PDF
-      for (let i = 0; i < uint8Array.length; i += 1000) {
-        const chunk = uint8Array.slice(i, i + 1000)
-        const decoded = decoder.decode(chunk)
-        
-        // Extract readable text (basic filtering)
-        const readableText = decoded.replace(/[^\x20-\x7E\s]/g, ' ').trim()
-        if (readableText.length > 10) {
-          text += readableText + ' '
+    // Method 1: Extract text between BT and ET markers (PDF text objects)
+    const textObjects = pdfString.match(/BT\s*.*?ET/gs)
+    if (textObjects) {
+      for (const obj of textObjects) {
+        // Extract text content from text objects
+        const textMatches = obj.match(/\(([^)]+)\)/g)
+        if (textMatches) {
+          for (const match of textMatches) {
+            const text = match.slice(1, -1) // Remove parentheses
+            if (text.length > 1 && /[a-zA-Z]/.test(text)) {
+              extractedText += text + ' '
+            }
+          }
         }
       }
-      
-      if (text.length > 50) {
-        console.log('Fallback parsing successful, text length:', text.length)
-        return text.trim()
-      }
-    } catch (fallbackError) {
-      console.error('Fallback parsing also failed:', fallbackError)
     }
     
+    // Method 2: Extract readable text patterns
+    if (extractedText.length < 100) {
+      console.log('Trying alternative text extraction...')
+      
+      // Look for common text patterns in PDF
+      const textPatterns = [
+        /[A-Za-z][A-Za-z0-9\s,.-]{10,}/g, // Words and sentences
+        /[A-Za-z]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, // Email addresses
+        /[A-Za-z\s]+,\s*[A-Z]{2}/g, // City, State
+        /\(\d{3}\)\s*\d{3}-\d{4}/g, // Phone numbers
+        /\d{4}/g // Years
+      ]
+      
+      for (const pattern of textPatterns) {
+        const matches = pdfString.match(pattern)
+        if (matches) {
+          extractedText += matches.join(' ') + ' '
+        }
+      }
+    }
+    
+    // Method 3: Extract all readable ASCII text
+    if (extractedText.length < 50) {
+      console.log('Using basic ASCII text extraction...')
+      
+      // Extract all readable ASCII characters
+      const readableText = pdfString
+        .replace(/[^\x20-\x7E\s]/g, ' ') // Replace non-printable chars
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim()
+      
+      // Filter out very short or meaningless text
+      const words = readableText.split(' ').filter(word => 
+        word.length > 2 && 
+        /[a-zA-Z]/.test(word) && 
+        !/^[0-9\s]+$/.test(word)
+      )
+      
+      extractedText = words.join(' ')
+    }
+    
+    // Clean up the extracted text
+    extractedText = extractedText
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/[^\x20-\x7E\s]/g, '') // Remove non-printable chars
+      .trim()
+    
+    console.log('PDF text extracted successfully:', {
+      textLength: extractedText.length,
+      preview: extractedText.substring(0, 200) + '...'
+    })
+    
+    if (extractedText.length < 10) {
+      throw new Error('No readable text found in PDF')
+    }
+    
+    return extractedText
+  } catch (error) {
+    console.error('Error parsing PDF:', error)
     throw new Error(`PDF parsing failed: ${error.message}`)
   }
 }
